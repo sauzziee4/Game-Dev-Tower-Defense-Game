@@ -3,12 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using System.Linq;
 
-[System.Serializable]
-public class HexVariantSet
-{
-    public HexType type;
-    public List<HexVariant> variants;
-}
+
 
 public class HexGridGenerator : MonoBehaviour
 {
@@ -50,7 +45,28 @@ public class HexGridGenerator : MonoBehaviour
         GeneratePaths();
         PlaceTower();
     }
-    private void BuildVariant 
+    private void BuildVariantDictionary()
+    {
+        variantDict.Clear();
+        if (variantSets == null) return;
+
+        foreach (var set in variantSets)
+        {
+            if(set == null) continue;
+            if (!variantDict.TryGetValue(set.hexType, out var list))
+            {
+                list = new List<HexVariant>();
+                variantDict.Add(set.hexType , list);
+            }
+
+            if(set.variants != null)
+                list.AddRange(set.variants.Where(v => v != null ));
+        }
+
+        if (!variantDict.ContainsKey(HexType.Grass))
+            Debug.LogWarning("No grass variants assigned in variantSet. Assign at least one grass variant");
+
+    }
     void GenerateGrid()
     {
         foreach (int q in System.Linq.Enumerable.Range(-gridRadius, gridRadius + 1))

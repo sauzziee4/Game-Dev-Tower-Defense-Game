@@ -2,7 +2,7 @@ using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
 
-public enum HexType { Grass, Path, Hill, River, TowerBase}
+public enum HexType { Grass, Path, TowerBase}
 
 [System.Serializable]
 public class HexVariant
@@ -11,7 +11,7 @@ public class HexVariant
     public List<int> openEdges = new List<int>(); //eg {0,3} means straight N-S connection
 }
 
-
+[System.Serializable]
 public class HexVariantSet
 {
     public HexType hexType;
