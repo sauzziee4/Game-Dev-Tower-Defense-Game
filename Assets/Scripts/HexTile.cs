@@ -9,7 +9,7 @@ public class HexVariant
 {
     public GameObject prefab;
     //public List<int> openEdges = new List<int>(); //eg {0,3} means straight N-S connection
-    public int rotation; // multiples of 60
+    
     public int[] openEdges;
     
 }
@@ -18,7 +18,7 @@ public class HexVariant
 public class HexVariantSet
 {
     public HexType hexType;
-    public List<HexVariant> variants = new List<HexVariant>();
+    public HexVariant[] variants;
 }
 
 public class HexTile : MonoBehaviour

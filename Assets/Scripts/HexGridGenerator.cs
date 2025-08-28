@@ -21,12 +21,12 @@ public class HexGridGenerator : MonoBehaviour
     // Hex axial directions (0 = East, counter-clockwise)
     private readonly Vector2Int[] HexDirections =
     {
-        new Vector2Int(1, 0),   // 0 East
-        new Vector2Int(1, -1),  // 1 NE
-        new Vector2Int(0, -1),  // 2 NW
-        new Vector2Int(-1, 0),  // 3 West
-        new Vector2Int(-1, 1),  // 4 SW
-        new Vector2Int(0, 1)    // 5 SE
+        new Vector2Int(1, -1),   // 0 NE side
+        new Vector2Int(1, 0),  // 1 E side
+        new Vector2Int(0, 1),  // 2 SE side
+        new Vector2Int(-1, 1),  // 3 SWest side
+        new Vector2Int(-1, 0),  // 4 W side
+        new Vector2Int(0, -1)    // 5 NW side
     };
 
     void Awake()
@@ -84,12 +84,187 @@ public class HexGridGenerator : MonoBehaviour
     void CreatePathToCastle(Vector2Int start, Vector2Int castle)
     {
         Vector2Int current = start;
+        Vector2Int previous = start;
+        int currentDirection = -1;
+
         while (current != castle)
         {
-            int dir = GetDirectionToCastle(current, castle);
-            PlaceTile(current, HexType.Path, dir);
-            current = StepTowards(current, castle);
+            Vector2Int next;
+            int nextDirection;
+
+            if(Random.Range(0f, 1f) <0.3f && Vector2.Distance(current,castle) >2)
+            {
+                next = StepTowardsWithVariation(current, castle, currentDirection);
+                nextDirection = GetHexDirection(current, next);
+            }
+            else
+            {
+                next = StepTowards(current, castle);
+                nextDirection = GetHexDirection(current, next);
+            }
+
+            int directionFromPrevious = -1;
+
+            if (current != start)
+            {
+                directionFromPrevious =  GetHexDirection(previous, current);
+            }
+
+            PlacePathTile(current, directionFromPrevious, nextDirection);
+
+            previous = current;
+            current = next;
+            currentDirection = nextDirection;
         }
+    }
+    Vector2Int StepTowardsWithVariation(Vector2Int current, Vector2Int castle, int avoidDirection)
+    {
+        Vector2Int directStep = StepTowards(current, castle);
+        int directDirection = GetHexDirection(current, directStep);
+
+        int[] adjacentDirs =
+        {
+            (directDirection + 5) % 6,
+            (directDirection + 1) % 6
+        };
+
+        foreach (int dir in adjacentDirs)
+        {
+            if (dir == avoidDirection) continue;
+            Vector2Int candidate = current + HexDirections[dir];
+
+            float currentDist = Vector2Int.Distance(current, castle);
+            float candidateDist = Vector2Int.Distance(candidate,castle);
+
+            if (candidateDist <= currentDist +1)
+            {
+                return candidate;
+            }
+        }
+        return directStep;
+    }
+
+    int GetHexDirection(Vector2Int from, Vector2Int to)
+    {
+        Vector2Int delta = to - from;
+
+        for (int i = 0; i < HexDirections.Length; i++)
+        {
+            if (HexDirections[i] == delta)
+            {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    void PlacePathTile(Vector2Int coords, int directionFrom, int directionTo)
+    {
+        if (tileMap.ContainsKey(coords)) return;
+
+        int hexDistance = Mathf.Abs(coords.x) + Mathf.Abs(coords.y) + Mathf.Abs(coords.x + coords.y);
+        if (hexDistance / 2 > gridRadius)
+            return;
+
+        if (!variantDict.TryGetValue(HexType.Path, out List<HexVariant> variants) || variants.Count == 0)
+        {
+            Debug.LogError("No Variants for path");
+            return;
+        }
+
+        List<int> requiredEdges = new List<int>();
+
+        if (directionFrom >= 0)
+        {
+            requiredEdges.Add((directionFrom + 3) % 6);
+        }
+
+        if (directionTo >= 0)
+        {
+            requiredEdges.Add(directionTo);
+        }
+
+        HexVariant chosen = null;
+        int bestRotation = 0;
+        bool isCornerConnection = false;
+
+        if (directionFrom >= 0 && directionTo >= 0)
+        { 
+            int fromEdge = (directionFrom + 3) % 6;
+            int toEdge = directionTo;
+                int edgeDiff = Mathf.Abs(fromEdge = toEdge);
+            isCornerConnection = (edgeDiff == 1 || edgeDiff == 5);
+        }
+
+
+        foreach (HexVariant variant in variants)
+        {
+            if (variant.openEdges == null || variant.openEdges.Length == 0 ) continue;
+
+            bool isCornerPiece = IsCornerPiece(variant);
+
+            if (isCornerConnection && !isCornerPiece && Random.Range(0f, 1f) < 0.7f) continue;
+            if (!isCornerConnection && isCornerPiece && Random.Range(0f, 1f) < 0.5f) continue ;
+
+            for(int rotation = 0; rotation < 6;rotation++)
+            {
+                int[] rotatedEdges = new int[variant.openEdges.Length];
+                for(int i = 0; i < variant.openEdges.Length; i++)
+                {
+                    rotatedEdges[i] = (variant.openEdges[i] + rotation) % 6;
+                }
+
+                bool canConnect = true;
+                foreach(int requiredEdge in requiredEdges)
+                {
+                    bool hasEdge = false;
+                    foreach (int edge in rotatedEdges)
+                    {
+                        if (edge == requiredEdge)
+                        {
+                            hasEdge = true;
+                            break;
+                        }
+                    }
+                    if(!hasEdge)
+                    {
+                        canConnect = false;
+                            break;
+                    }
+                }
+
+                if(canConnect)
+                {
+                    chosen = variant;
+                    bestRotation = rotation; break;
+                }
+            }
+            if (chosen != null) break;
+        }
+        if (chosen == null)
+        {
+            chosen = variants[Random.Range(0, variants.Count)];
+            bestRotation = 0;
+            Debug.LogWarning($"Could not find perfect path connection at {coords}, using fallback");
+        }
+
+        float rotationAngle = bestRotation * 60f;
+        Vector3 pos = HexToWorld(coords);
+        GameObject placed = Instantiate(chosen.prefab,pos,Quaternion.Euler(0, rotationAngle,0), transform);
+        placed.name = $"PathTile_{coords.x}_{coords.y}_{(chosen.openEdges.Length == 2 && IsCornerPiece(chosen) ? "Corner" : "Straight")}";
+        tileMap[coords] = placed;
+
+    }
+
+    bool IsCornerPiece(HexVariant variant)
+    {
+        if (variant.openEdges.Length == 2) return false;
+
+        int edge1 = variant.openEdges[0];
+        int edge2 = variant.openEdges[1];
+        int diff = Mathf.Abs(edge1 - edge2);
+
+        return (diff == 1 || diff == 5);
     }
 
     Vector2Int StepTowards(Vector2Int current, Vector2Int castle)
@@ -117,52 +292,30 @@ public class HexGridGenerator : MonoBehaviour
 
     void PlaceTile(Vector2Int coords, HexType type, int directionToConnect)
     {
+        if(type == HexType.Path)
+        {
+            PlacePathTile(coords, directionToConnect, -1);
+                return;
+        }
+
         if (tileMap.ContainsKey(coords)) return;
 
-        if (!variantDict.TryGetValue(type, out var variants) || variants.Count == 0)
+        int hexDistance = Mathf.Abs(coords.x) + Mathf.Abs(coords.y) + Mathf.Abs(coords.x + coords.y);
+        if (hexDistance / 2 > gridRadius)
+            return;
+
+        if (!variantDict.TryGetValue(type, out List<HexVariant> variants) || variants.Count == 0)
         {
             Debug.LogError("No variants for " + type);
             return;
         }
 
-        HexVariant chosen = null;
-
-        if (directionToConnect >= 0)
-        {
-            int requiredEdge = (directionToConnect + 3) % 6;
-            var candidates = variants.Where(v => v.openEdges.Contains(requiredEdge)).ToList();
-
-            if (candidates.Count > 0)
-            {
-                chosen = candidates[Random.Range(0, candidates.Count)];
-            }
-        }
-
-        if (chosen == null)
-            chosen = variants[Random.Range(0, variants.Count)];
-
-        int prefabEdge = 0; // default value if no open edges
-        if (chosen.openEdges != null && chosen.openEdges.Length > 0)
-        {
-            prefabEdge = chosen.openEdges[0];
-        }
-        else
-        {
-            Debug.LogWarning("Chosen tile prefab " + chosen.prefab.name + " has no open edges!");
-        }
-        int rotationSteps = 0;
-        
-        if (directionToConnect >= 0)
-        {
-            rotationSteps = (directionToConnect - prefabEdge + 6) % 6;
-        }
-        
-        float rotationAngle = rotationSteps * 60f;
+        HexVariant chosen = variants[Random.Range(0, variants.Count)];  
 
         Vector3 pos = HexToWorld(coords);
-        Instantiate(chosen.prefab, pos, Quaternion.Euler(0, rotationAngle, 0), transform);
-
-        tileMap[coords] = chosen.prefab != null ? chosen.prefab : new GameObject("Tile");
+        GameObject placed = Instantiate(chosen.prefab, pos, Quaternion.Euler(0, 0, 0), transform);
+        placed.name = $"Tile_{coords.x}_{coords.y}";
+        tileMap[coords] = placed;
     }
 
     Vector3 HexToWorld(Vector2Int hexCoords)
