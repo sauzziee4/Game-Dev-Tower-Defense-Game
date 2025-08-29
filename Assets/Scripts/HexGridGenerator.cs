@@ -4,8 +4,6 @@ using UnityEditor;
 using System.Linq;
 using JetBrains.Annotations;
 
-
-
 public class HexGridGenerator : MonoBehaviour
 {
     [Header("Tile Variants")]
@@ -13,6 +11,7 @@ public class HexGridGenerator : MonoBehaviour
 
     [Header("Map Settings")]
     public int gridRadius = 8;
+
     public int pathCount = 3;
 
     private Dictionary<HexType, List<HexVariant>> variantDict;
@@ -29,7 +28,7 @@ public class HexGridGenerator : MonoBehaviour
         new Vector2Int(0, -1)    // 5 NW side
     };
 
-    void Awake()
+    private void Awake()
     {
         variantDict = new Dictionary<HexType, List<HexVariant>>();
         foreach (var set in variantSets)
@@ -42,7 +41,7 @@ public class HexGridGenerator : MonoBehaviour
         GenerateMap();
     }
 
-    void GenerateMap()
+    private void GenerateMap()
     {
         Vector2Int castlePos = new Vector2Int(0, 0);
         PlaceTile(castlePos, HexType.Castle, -1);
@@ -67,7 +66,7 @@ public class HexGridGenerator : MonoBehaviour
         }
     }
 
-    Vector2Int GetRandomEdgePosition()
+    private Vector2Int GetRandomEdgePosition()
     {
         int side = Random.Range(0, 4);
         int offset = Random.Range(-gridRadius, gridRadius + 1);
@@ -81,7 +80,7 @@ public class HexGridGenerator : MonoBehaviour
         }
     }
 
-    void CreatePathToCastle(Vector2Int start, Vector2Int castle)
+    private void CreatePathToCastle(Vector2Int start, Vector2Int castle)
     {
         Vector2Int current = start;
         Vector2Int previous = start;
@@ -92,7 +91,7 @@ public class HexGridGenerator : MonoBehaviour
             Vector2Int next;
             int nextDirection;
 
-            if(Random.Range(0f, 1f) <0.3f && Vector2.Distance(current,castle) >2)
+            if (Random.Range(0f, 1f) < 0.3f && Vector2.Distance(current, castle) > 2)
             {
                 next = StepTowardsWithVariation(current, castle, currentDirection);
                 nextDirection = GetHexDirection(current, next);
@@ -107,7 +106,7 @@ public class HexGridGenerator : MonoBehaviour
 
             if (current != start)
             {
-                directionFromPrevious =  GetHexDirection(previous, current);
+                directionFromPrevious = GetHexDirection(previous, current);
             }
 
             PlacePathTile(current, directionFromPrevious, nextDirection);
@@ -117,7 +116,8 @@ public class HexGridGenerator : MonoBehaviour
             currentDirection = nextDirection;
         }
     }
-    Vector2Int StepTowardsWithVariation(Vector2Int current, Vector2Int castle, int avoidDirection)
+
+    private Vector2Int StepTowardsWithVariation(Vector2Int current, Vector2Int castle, int avoidDirection)
     {
         Vector2Int directStep = StepTowards(current, castle);
         int directDirection = GetHexDirection(current, directStep);
@@ -134,9 +134,9 @@ public class HexGridGenerator : MonoBehaviour
             Vector2Int candidate = current + HexDirections[dir];
 
             float currentDist = Vector2Int.Distance(current, castle);
-            float candidateDist = Vector2Int.Distance(candidate,castle);
+            float candidateDist = Vector2Int.Distance(candidate, castle);
 
-            if (candidateDist <= currentDist +1)
+            if (candidateDist <= currentDist + 1)
             {
                 return candidate;
             }
@@ -144,7 +144,7 @@ public class HexGridGenerator : MonoBehaviour
         return directStep;
     }
 
-    int GetHexDirection(Vector2Int from, Vector2Int to)
+    private int GetHexDirection(Vector2Int from, Vector2Int to)
     {
         Vector2Int delta = to - from;
 
@@ -158,7 +158,7 @@ public class HexGridGenerator : MonoBehaviour
         return 0;
     }
 
-    void PlacePathTile(Vector2Int coords, int directionFrom, int directionTo)
+    private void PlacePathTile(Vector2Int coords, int directionFrom, int directionTo)
     {
         if (tileMap.ContainsKey(coords)) return;
 
@@ -189,33 +189,32 @@ public class HexGridGenerator : MonoBehaviour
         bool isCornerConnection = false;
 
         if (directionFrom >= 0 && directionTo >= 0)
-        { 
+        {
             int fromEdge = (directionFrom + 3) % 6;
             int toEdge = directionTo;
-                int edgeDiff = Mathf.Abs(fromEdge = toEdge);
+            int edgeDiff = Mathf.Abs(fromEdge = toEdge);
             isCornerConnection = (edgeDiff == 1 || edgeDiff == 5);
         }
 
-
         foreach (HexVariant variant in variants)
         {
-            if (variant.openEdges == null || variant.openEdges.Length == 0 ) continue;
+            if (variant.openEdges == null || variant.openEdges.Length == 0) continue;
 
             bool isCornerPiece = IsCornerPiece(variant);
 
             if (isCornerConnection && !isCornerPiece && Random.Range(0f, 1f) < 0.7f) continue;
-            if (!isCornerConnection && isCornerPiece && Random.Range(0f, 1f) < 0.5f) continue ;
+            if (!isCornerConnection && isCornerPiece && Random.Range(0f, 1f) < 0.5f) continue;
 
-            for(int rotation = 0; rotation < 6;rotation++)
+            for (int rotation = 0; rotation < 6; rotation++)
             {
                 int[] rotatedEdges = new int[variant.openEdges.Length];
-                for(int i = 0; i < variant.openEdges.Length; i++)
+                for (int i = 0; i < variant.openEdges.Length; i++)
                 {
                     rotatedEdges[i] = (variant.openEdges[i] + rotation) % 6;
                 }
 
                 bool canConnect = true;
-                foreach(int requiredEdge in requiredEdges)
+                foreach (int requiredEdge in requiredEdges)
                 {
                     bool hasEdge = false;
                     foreach (int edge in rotatedEdges)
@@ -226,14 +225,14 @@ public class HexGridGenerator : MonoBehaviour
                             break;
                         }
                     }
-                    if(!hasEdge)
+                    if (!hasEdge)
                     {
                         canConnect = false;
-                            break;
+                        break;
                     }
                 }
 
-                if(canConnect)
+                if (canConnect)
                 {
                     chosen = variant;
                     bestRotation = rotation; break;
@@ -250,13 +249,12 @@ public class HexGridGenerator : MonoBehaviour
 
         float rotationAngle = bestRotation * 60f;
         Vector3 pos = HexToWorld(coords);
-        GameObject placed = Instantiate(chosen.prefab,pos,Quaternion.Euler(0, rotationAngle,0), transform);
+        GameObject placed = Instantiate(chosen.prefab, pos, Quaternion.Euler(0, rotationAngle, 0), transform);
         placed.name = $"PathTile_{coords.x}_{coords.y}_{(chosen.openEdges.Length == 2 && IsCornerPiece(chosen) ? "Corner" : "Straight")}";
         tileMap[coords] = placed;
-
     }
 
-    bool IsCornerPiece(HexVariant variant)
+    private bool IsCornerPiece(HexVariant variant)
     {
         if (variant.openEdges.Length == 2) return false;
 
@@ -267,7 +265,7 @@ public class HexGridGenerator : MonoBehaviour
         return (diff == 1 || diff == 5);
     }
 
-    Vector2Int StepTowards(Vector2Int current, Vector2Int castle)
+    private Vector2Int StepTowards(Vector2Int current, Vector2Int castle)
     {
         int dx = castle.x - current.x;
         int dy = castle.y - current.y;
@@ -280,7 +278,7 @@ public class HexGridGenerator : MonoBehaviour
             return current;
     }
 
-    int GetDirectionToCastle(Vector2Int current, Vector2Int castle)
+    private int GetDirectionToCastle(Vector2Int current, Vector2Int castle)
     {
         Vector2Int delta = castle - current;
 
@@ -290,12 +288,12 @@ public class HexGridGenerator : MonoBehaviour
             return delta.y > 0 ? 5 : 2;
     }
 
-    void PlaceTile(Vector2Int coords, HexType type, int directionToConnect)
+    private void PlaceTile(Vector2Int coords, HexType type, int directionToConnect)
     {
-        if(type == HexType.Path)
+        if (type == HexType.Path)
         {
             PlacePathTile(coords, directionToConnect, -1);
-                return;
+            return;
         }
 
         if (tileMap.ContainsKey(coords)) return;
@@ -310,7 +308,7 @@ public class HexGridGenerator : MonoBehaviour
             return;
         }
 
-        HexVariant chosen = variants[Random.Range(0, variants.Count)];  
+        HexVariant chosen = variants[Random.Range(0, variants.Count)];
 
         Vector3 pos = HexToWorld(coords);
         GameObject placed = Instantiate(chosen.prefab, pos, Quaternion.Euler(0, 0, 0), transform);
@@ -318,10 +316,20 @@ public class HexGridGenerator : MonoBehaviour
         tileMap[coords] = placed;
     }
 
-    Vector3 HexToWorld(Vector2Int hexCoords)
+    private Vector3 HexToWorld(Vector2Int hexCoords)
     {
         float x = Mathf.Sqrt(3f) * (hexCoords.x + hexCoords.y / 2f);
         float z = 1.5f * hexCoords.y;
         return new Vector3(x, 0, z);
+    }
+
+    //dani added (incase it messes up)
+    public GameObject GetTileAt(Vector2Int hexCoords)
+    {
+        if (tileMap.TryGetValue(hexCoords, out GameObject tile))
+        {
+            return tile;
+        }
+        return null;
     }
 }
