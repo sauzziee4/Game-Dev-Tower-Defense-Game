@@ -180,5 +180,118 @@ public class TowerBehaviour : MonoBehaviour
 
     private void FireProjectile()
     {
+        if (projectilePrefab == null || firePoint == null) return;
+
+        GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        Projectile projectileScript = projectile.GetComponent<Projectile>();
+
+        if (projectileScript != null)
+        {
+            projectileScript.Instalize(currentTarget, attackDamage);
+        }
+    }
+
+    private void PlayAttackEffects()
+    {
+        //Muzzle flash
+        if (muzzleFlash != null)
+        {
+            muzzleFlash.Play();
+        }
+
+        //sound effect
+        if (audioSource != null && shootSound != null)
+        {
+            audioSource.PlayOneShot(shootSound);
+        }
+    }
+
+    public void TakeDamage(float damage)
+    {
+        if (isDestroyed) return;
+
+        currentHealth -= damage;
+        currentHealth = Mathf.Max(0, currentHealth);
+
+        //Update health bar
+        if (healthBar != null)
+        {
+            healthBar.value = currentHealth;
+        }
+
+        //play hit sound
+        if (audioSource != null && hitSound != null)
+        {
+            audioSource.PlayOneShot(hitSound);
+        }
+
+        //check if tower is destroyed
+        if (currentHealth <= 0)
+        {
+            DestroyTower();
+        }
+    }
+
+    private void DestroyTower()
+    {
+        if (isDestroyed) return;
+
+        isDestroyed = true;
+
+        //Play destruction sound
+        if (audioSource != null && destroyedSound != null)
+        {
+            audioSource.PlayOneShot(destroyedSound);
+        }
+
+        //notify game manager
+        onTowerDestroyed?.Invoke(this);
+
+        //optional add destruction effects here\/
+    }
+
+    private IEnumerator DestroyAfterSound()
+    {
+        //wait for sound to finish playing
+        if (destroyedSound != null)
+        {
+            yield return new WaitForSeconds(destroyedSound.length);
+        }
+        else
+        {
+            yield return new WaitForSeconds(1f);
+        }
+
+        Destroy(gameObject);
+    }
+
+    public float GetHealthPercentage()
+    {
+        return currentHealth / maxHealth;
+    }
+
+    public bool IsDestroyed()
+    {
+        return isDestroyed;
+    }
+
+    public int GetEnemiesInRangeCount()
+    {
+        return eneimesInRange.Count;
+    }
+
+    //visualisation in editor
+    private void OnDrawGizmosSelected()
+    {
+        //draw attack range
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+
+        //draw line to current target
+        if (currentTarget != null)
+        {
+            Gizmos.color = Color.yellow; ;
+            Gizmos.DrawLine(transform.position, currentTarget.transform.position);
+        }
     }
 }
