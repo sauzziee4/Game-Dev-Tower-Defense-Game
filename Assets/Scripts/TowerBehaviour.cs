@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 
-public class TowerBehaviour : MonoBehaviour
+/* public class TowerBehaviour : MonoBehaviour
 {
     [Header("Tower Stats")]
     public float maxHealth = 100f;
@@ -183,7 +183,7 @@ public class TowerBehaviour : MonoBehaviour
         if (projectilePrefab == null || firePoint == null) return;
 
         GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-        Projectile projectileScript = projectile.GetComponent<Projectile>();
+        ProjectileBehaviour projectileScript = projectile.GetComponent<Projectile>();
 
         if (projectileScript != null)
         {
@@ -277,7 +277,7 @@ public class TowerBehaviour : MonoBehaviour
 
     public int GetEnemiesInRangeCount()
     {
-        return eneimesInRange.Count;
+        return enemiesInRange.Count;
     }
 
     //visualisation in editor
@@ -294,4 +294,4 @@ public class TowerBehaviour : MonoBehaviour
             Gizmos.DrawLine(transform.position, currentTarget.transform.position);
         }
     }
-}
+} */
