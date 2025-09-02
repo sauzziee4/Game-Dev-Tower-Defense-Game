@@ -322,14 +322,4 @@ public class HexGridGenerator : MonoBehaviour
         float z = 1.5f * hexCoords.y;
         return new Vector3(x, 0, z);
     }
-
-    //dani added (incase it messes up)
-    public GameObject GetTileAt(Vector2Int hexCoords)
-    {
-        if (tileMap.TryGetValue(hexCoords, out GameObject tile))
-        {
-            return tile;
-        }
-        return null;
-    }
 }

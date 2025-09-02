@@ -1,298 +1,107 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Collections;
+using System.Linq;
 
-/* public class Enemy : MonoBehaviour
+//represents an enemy unit that moves along path and attacks the tower
+//this is a placeholder and needs to be intergrated with pathfinding logic
+public class Enemy : MonoBehaviour
 {
+    //static list keeping track of all active enemies in scene
+    public static List<Enemy> allEnemies = new List<Enemy>();
+
     [Header("Enemy Stats")]
-    public float maxHealth = 50f;
+    public float health = 20f;
 
-    public float currentHealth;
-    public float moveSpeed = 2f;
-    public float damageToTower = 10f;
+    public float maxHealth = 20f;
+    public float speed = 5f;
+    public float attackDamage = 5f;
+    public float attackRange = 1.5f;
+    public float attackRate = 1.5f; //attacks per secound
+    private float nextAttackTime = 0f;
 
-    [Header("Visual Components")]
-    public Canvas healthBarCanvas;
+    private Transform target; //can be defender or tower
+    private HexTile currentTile; //current tile enemy is on for pathfinding
 
-    public UnityEngine.UI.Slider healthBar;
-    public GameObject deathEffect;
-
-    [Header("Audio")]
-    public AudioSource audioSource;
-
-    public AudioClip hitSound;
-    public AudioClip deathSound;
-
-    //private variables
-    private List<Vector3> pathToTower;
-
-    private int currentPathIndex = 0;
-    private bool isDead = false;
-    private bool reachedTower = false;
-    private HexGridGenerator hexGrid;
-
-    //event
-    public System.Action<Enemy> onEnemyDied;
-
-    public System.Action<Enemy, float> OnTowerDamage;
-
-    private void Start()
+    private void OnEnable()
     {
-        currentHealth = maxHealth;
-
-        //Setup health bar
-        if (healthBar != null)
-        {
-            healthBar.maxValue = maxHealth;
-            healthBar.value = currentHealth;
-        }
-
-        //find hex grid and get path
-        hexGrid = FindFirstObjectByType<HexGridGenerator>();
-        if (hexGrid != null)
-        {
-            SetupPath();
-        }
-
-        //setup audio
-        if (audioSource == null)
-            audioSource = GetComponent<AudioSource>();
+        //add this enemy to static list when it's enabled
+        allEnemies.Add(this);
     }
 
-    private void SetupPath()
+    private void OnDisable()
     {
-        //find the nearest path tile to the current position
-        Vector2Int startHex = WorldToHex(transform.position);
-
-        //if we're not on a path, find the nearest path edge
-        if (!hexGrid.IsPathTile(startHex))
-        {
-            startHex = FindNearestPathEdge();
-        }
-
-        //get path from our position to the castle
-        pathToTower = hexGrid.GetPathTocastle(startHex);
-        currentPathIndex = 0;
-
-        //position enemy at the start of the path
-        if (pathToTower.Count > 0)
-        {
-            transform.position = pathToTower[0] + Vector3.up * 0.5f; //slight offset
-        }
+        //Remove this enemy from static list when it is disabled or destroyed
+        allEnemies.Remove(this);
     }
 
-    private Vector2Int FindNearestPathEdge()
+    //place holder for pathfinding method
+    public void FollowPath()
     {
-        //get all path coordinates and find the one furthest from castle
-        List<Vector2Int> pathCoords = hexGrid.GetAllPathCoordinates();
-        Vector2Int castle = Vector2Int.zero;
+        //Implement actual pathfinding logic using hex grid here
 
-        Vector2Int furthest = Vector2Int.zero;
-        float maxDistance = 0f;
-
-        foreach (Vector2Int pathCoord in pathCoords)
+        //currently moves towards dummy target using:
+        if (target != null)
         {
-            float distance = Vector2Int.Distance(pathCoord, castle);
-            if (distance > maxDistance)
-            {
-                maxDistance = distance;
-                furthest = pathCoord;
-            }
+            Vector3 direction = (target.position - transform.position).normalized;
+            transform.position += direction * speed * Time.deltaTime;
         }
-
-        return furthest;
     }
 
     private void Update()
     {
-        if (isDead || reachedTower) return;
-
-        MoveAlongPath();
-
-        //always face camera if health bar is present
-        if (healthBarCanvas != null)
+        //placeholder for finding target
+        if (target == null)
         {
-            healthBarCanvas.transform.LookAt(Camera.main.transform);
+            FindTarget();
+        }
+
+        //placeholder for attacking target
+        if (target != null && Vector3.Distance(transform.position, target.position) <= attackRange)
+        {
+            if (Time.time >= nextAttackTime)
+            {
+                nextAttackTime = Time.time + 1f / attackRate;
+                AttackTarget();
+            }
+        }
+        else
+        {
+            FollowPath();
         }
     }
 
-    private void MoveAlongPath()
+    //finds closest defender or the tower to attack
+    private void FindTarget()
     {
-        if (pathToTower == null || pathToTower.Count == 0) return;
-
-        if (currentPathIndex >= pathToTower.Count)
+        //find all objects in scene that defends
+        IDefendable closestTarget = DefendableManager.GetClosestDefendable(transform.position);
+        if (closestTarget != null)
         {
-            ReachTower();
-            return;
-        }
-
-        Vector3 targetPosition = pathToTower[currentPathIndex] + Vector3.up * 0.5f;
-        Vector3 direction = (targetPosition - targetPosition).normalized;
-
-        //move towards target
-        transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
-
-        //rotate face movement direction
-        if (direction.magnitude > 0.1f)
-        {
-            transform.rotation = Quaternion.LookRotation(direction);
-        }
-
-        //check if we have reached the current waypoint
-        if (Vector3.Distance(transform.position, targetPosition) < 0.2f)
-        {
-            currentPathIndex++;
+            target = (closestTarget as MonoBehaviour).transform;
         }
     }
 
-    private void ReachTower()
+    //inflicts damage on current target
+    private void AttackTarget()
     {
-        if (reachedTower) return;
+        if (target == null) return;
 
-        reachedTower = true;
-
-        //find and damage the tower
-        TowerBehaviour tower = FindFirstObjectByType<TowerBehaviour>();
-        if (tower != null)
+        IDefendable defendableTarget = target.GetComponent<IDefendable>();
+        if (defendableTarget != null)
         {
-            tower.TakeDamage(damageToTower);
-            OnTowerDamage?.Invoke(this, damageToTower);
+            defendableTarget.TakeDamage(attackDamage);
         }
-
-        //destroy this
-        StartCoroutine(DestroyAfterDelay(0.5f));
     }
 
+    //reduces the enemy's health and handles iits destruction
+    //"damage" is amount of health to be reduced by
     public void TakeDamage(float damage)
     {
-        if (isDead) return;
-
-        currentHealth -= damage;
-        currentHealth = Mathf.Max(0, currentHealth);
-
-        //update health bar
-        if (healthBar != null)
+        health -= damage;
+        Debug.Log($"Enemy health: {health}");
+        if (health <= 0)
         {
-            healthBar.value = currentHealth;
-        }
-
-        //play hit sound
-        if (audioSource != null && hitSound != null)
-        {
-            audioSource.PlayOneShot(hitSound);
-        }
-
-        //check if enemy died
-        if (currentHealth <= 0)
-        {
-            onEnemyDied();
+            Destroy(gameObject);
         }
     }
-
-    private void Die()
-    {
-        if (isDead) return;
-
-        isDead = true;
-
-        //play death sound
-        if (audioSource != null && deathSound != null)
-        {
-            audioSource.PlayOneShot(deathSound);
-        }
-
-        //spawn death effect
-        if (deathEffect != null)
-        {
-            GameObject effect = Instantiate(deathEffect, transform.position, transform.rotation);
-            Destroy(effect, 3f);
-        }
-
-        //notify
-        OnEnemyDied?.Invoke(this);
-
-        //destroy enemy
-        StartCoroutine(DestroyAfterDelay(deathSound != null ? deathSound.length : 1f));
-    }
-
-    private IEnumerator DestroyAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        Destroy(gameObject);
-    }
-
-    //public utility methods
-    public bool IsDead()
-    {
-        return isDead;
-    }
-
-    public bool HasReachedTower()
-    {
-        return reachedTower;
-    }
-
-    public float GetHealthPercentage()
-    {
-        return currentHealth / maxHealth;
-    }
-
-    public Vector3 GetnextWaypoint()
-    {
-        if (pathToTower != null && currentPathIndex < pathToTower.Count)
-        {
-            return pathToTower[currentPathIndex];
-        }
-
-        return transform.position;
-    }
-
-    //helper method for hex conversion (matches HexGridGenerator)
-    private Vector2Int WorldToHex(Vector3 worldPos)
-    {
-        float q = (Mathf.Sqrt(3f) / 3f * worldPos.x - 1f / 3f * worldPos.z);
-        float r = (2f / 3f * worldPos.z);
-
-        return HexRound(q, r);
-    }
-
-    private Vector2Int HexRound(float q, float r)
-    {
-        float s = -q - r;
-
-        int rq = Mathf.RoundToInt(q);
-        int rr = Mathf.RoundToInt(r);
-        int rs = Mathf.RoundToInt(s);
-
-        float q_diff = Mathf.Abs(rq - q);
-        float r_diff = Mathf.Abs(rr - r);
-        float s_diff = Mathf.Abs(rs - s);
-
-        if (q_diff > r_diff && q_diff > s_diff)
-            rq = -rr - rs;
-        else if (r_diff > s_diff)
-            rr = -rq - rs;
-
-        return new Vector2Int(rq, rr);
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        //draw path to tower
-        if (pathToTower != null && pathToTower.Count > 1)
-        {
-            Gizmos.color = Color.cyan;
-            for (int i = 0; i < pathToTower.Count - 1; i++)
-            {
-                Gizmos.DrawLine(pathToTower[i], pathToTower[i + 1]);
-            }
-
-            //highlight current target
-            if (currentPathIndex < pathToTower.Count)
-            {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawSphere(pathToTower[currentPathIndex], 0.3f);
-            }
-        }
-    }
-} */
+}
