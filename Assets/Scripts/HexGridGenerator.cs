@@ -500,4 +500,67 @@ public class HexGridGenerator : MonoBehaviour
 
         decoration.name = $"Decoration_{coords.x}_{coords.y}_{decorationPrefab.name}";
     }
+
+    public Vector3 HexToWorldPublic(Vector2Int hexCoords, bool isPath = false)
+    {
+        return HexToWorld(hexCoords, isPath);
+    }
+
+    public GameObject GetTileAt(Vector2Int hexCoords)
+    {
+        tileMap.TryGetValue(hexCoords, out GameObject tile);
+        return tile;
+    }
+
+    public bool IsValidHexCoordinate(Vector2Int coords)
+    {
+        return Mathf.Abs(coords.x) <= gridRadius &&
+            Mathf.Abs(coords.y) <= gridRadius &&
+            Mathf.Abs(coords.x + coords.y) <= gridRadius;
+    }
+
+    public List<Vector2Int> GetTilesOfType(HexType type)
+    {
+        List<Vector2Int> tileOfType = new List<Vector2Int>();
+
+        foreach (var kvp in tileMap)
+        {
+            GameObject tile = kvp.Value;
+            string tileName = tile.name;
+
+            switch(type)
+            {
+                case HexType.Grass:
+                    if(tileName.Contains("Tile_")&& !tileName.Contains("PathTile_")&& !tileName.Contains("Castle")) 
+                        tileOfType.Add(kvp.Key); 
+                    break;
+                case HexType.Path:
+                    if(tileName.Contains("PathTile_"))
+                        tileOfType.Add(kvp.Key);
+                    break;
+                case HexType.Castle:
+                    if(tileName.Contains("Castle"))
+                        tileOfType.Add(kvp.Key);
+                    break;
+            }
+        }
+        return tileOfType;
+    }
+
+    public List<Vector2Int> GetNeighbors(Vector2Int hexCoords)
+    {
+        List<Vector2Int> neighbors = new List<Vector2Int>();
+
+        for(int i = 0; i < HexDirections.Length; i++)
+        {
+            Vector2Int neighbor = hexCoords + HexDirections[i];
+            if(IsValidHexCoordinate(neighbor) && tileMap.ContainsKey(neighbor))
+            {
+                neighbors.Add(neighbor);
+            }
+              
+        }
+
+        return neighbors;
+    }
 }
