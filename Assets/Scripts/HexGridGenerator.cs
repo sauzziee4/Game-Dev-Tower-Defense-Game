@@ -17,6 +17,12 @@ public class HexGridGenerator : MonoBehaviour
     [Header("Visual Settings")]
     public float hexSize = 1f;
 
+    [Header("Decoration Settings")]
+    public GameObject[] decorationPrefabs;
+    [Range(0f, 1f)]
+    public float decorationChance = 0.3f; 
+    public float decorationHeightOffset = 0.02f; 
+
     private Dictionary<HexType, List<HexVariant>> variantDict;
     private Dictionary<Vector2Int, GameObject> tileMap = new Dictionary<Vector2Int, GameObject>();
 
@@ -67,6 +73,8 @@ public class HexGridGenerator : MonoBehaviour
                 }
             }
         }
+
+        GenerateDecorations();
     }
 
     private Vector2Int GetRandomEdgePosition()
@@ -179,22 +187,22 @@ public class HexGridGenerator : MonoBehaviour
         HexVariant chosen = null;
         int bestRotation = 0;
 
-        // Only use straight pieces - no corner logic needed
+        
         foreach (HexVariant variant in variants)
         {
             if (variant.openEdges == null || variant.openEdges.Length == 0) continue;
 
-            // Only use straight pieces (2 edges, opposite each other)
+            
             if (variant.openEdges.Length != 2) continue;
 
             int edge1 = variant.openEdges[0];
             int edge2 = variant.openEdges[1];
             int edgeDiff = Mathf.Abs(edge1 - edge2);
 
-            // Skip if not a straight piece (opposite edges have difference of 3)
+            
             if (edgeDiff != 3) continue;
 
-            // Check if this variant matches our requirements (no rotation)
+            
             bool canConnect = true;
             foreach (int requiredEdge in requiredEdges)
             {
@@ -217,8 +225,7 @@ public class HexGridGenerator : MonoBehaviour
             if (canConnect)
             {
                 chosen = variant;
-                bestRotation = 0; // No rotation
-                break;
+                bestRotation = 0; 
             }
         }
 
@@ -229,13 +236,13 @@ public class HexGridGenerator : MonoBehaviour
         }
 
         float rotationAngle = bestRotation * 60f;
-        Vector3 pos = HexToWorld(coords, true); // Pass true for path tiles
+        Vector3 pos = HexToWorld(coords, true); 
         GameObject placed = Instantiate(chosen.prefab, pos, Quaternion.Euler(0, rotationAngle, 0), transform);
 
-        // Calculate the actual edges (no rotation since tiles have preset orientations)
+        
         int[] actualEdges = chosen.openEdges;
 
-        // Determine tile type (only straight pieces now)
+        
         string tileType = "Straight";
         if (actualEdges.Length == 2)
         {
@@ -257,13 +264,13 @@ public class HexGridGenerator : MonoBehaviour
             tileType = $"Invalid_{actualEdges.Length}Edge";
         }
 
-        // Create name with actual connected edges (no rotation)
+        
         string edgeList = string.Join("-", actualEdges);
         placed.name = $"PathTile_{coords.x}_{coords.y}_{tileType}_Edges[{edgeList}]";
 
         tileMap[coords] = placed;
 
-        // Store the tile data (no rotation since tiles have preset orientations)
+        
         StoreTileConnectionData(placed, chosen, 0);
     }
 
@@ -271,10 +278,10 @@ public class HexGridGenerator : MonoBehaviour
     {
         List<int> required = new List<int>();
 
-        // Add the planned connections first
+        
         if (directionFrom >= 0)
         {
-            int fromEdge = (directionFrom + 3) % 6; // Opposite direction
+            int fromEdge = (directionFrom + 3) % 6; 
             required.Add(fromEdge);
         }
         if (directionTo >= 0)
@@ -282,7 +289,7 @@ public class HexGridGenerator : MonoBehaviour
             required.Add(directionTo);
         }
 
-        // Check existing neighbors (but prioritize planned connections)
+        
         for (int dir = 0; dir < 6; dir++)
         {
             Vector2Int neighborCoords = coords + HexDirections[dir];
@@ -314,7 +321,7 @@ public class HexGridGenerator : MonoBehaviour
             return false;
         }
 
-        // Check the actual open edges (no rotation since tiles have preset orientations)
+        
         foreach (int edge in hexTile.variant.openEdges)
         {
             if (edge == expectedEdge)
@@ -332,7 +339,7 @@ public class HexGridGenerator : MonoBehaviour
         if (hexTile == null)
             hexTile = tile.AddComponent<HexTile>();
 
-        // Store the variant and rotation for later reference
+        
         hexTile.variant = variant;
         hexTile.rotation = rotation;
     }
@@ -341,7 +348,7 @@ public class HexGridGenerator : MonoBehaviour
     {
         Vector2Int delta = castle - current;
 
-        // Find the best hex direction that gets us closer to the castle
+        
         int bestDirection = 0;
         float bestDistance = float.MaxValue;
 
@@ -381,7 +388,7 @@ public class HexGridGenerator : MonoBehaviour
 
         HexVariant chosen = variants[Random.Range(0, variants.Count)];
 
-        Vector3 pos = HexToWorld(coords, false); // Pass false for non-path tiles
+        Vector3 pos = HexToWorld(coords, false); 
         GameObject placed = Instantiate(chosen.prefab, pos, Quaternion.Euler(0, 0, 0), transform);
         placed.name = $"Tile_{coords.x}_{coords.y}";
         tileMap[coords] = placed;
@@ -393,5 +400,53 @@ public class HexGridGenerator : MonoBehaviour
         float z = hexSize * (3f / 2f * hexCoords.y);
         float y = isPath ? 0.01f : 0f;
         return new Vector3(x, y, z);
+    }
+
+    private void GenerateDecorations()
+    {
+        if (decorationPrefabs == null || decorationPrefabs.Length == 0) return;
+
+        foreach (var kvp in tileMap)
+        {
+            Vector2Int coords = kvp.Key;
+            GameObject tile = kvp.Value;
+
+            if (IsGrassTile(tile))
+            {
+                if(Random.Range(0f,1f) < decorationChance)
+                {
+                    PlaceDecoration(coords, tile);
+                }
+            }
+        } 
+            
+    }
+
+    private bool IsGrassTile(GameObject tile)
+    {
+        return tile.name.Contains("Tile_") && !tile.name.Contains("PathTile_");
+    }
+
+    private void PlaceDecoration(Vector2Int coords, GameObject grassTile)
+    {
+        GameObject decorationPrefab = decorationPrefabs[Random.Range(0, decorationPrefabs.Length)];
+
+        Vector3 decorationPos = HexToWorld(coords, false);
+        decorationPos.y += decorationHeightOffset;
+
+        float maxOffset = hexSize * 0.3f;
+        float randomX = Random.Range(-maxOffset, maxOffset);
+        float randomZ = Random.Range(-maxOffset, maxOffset);
+        decorationPos.x += randomX;
+        decorationPos.z += randomZ;
+
+        float randomRotation = Random.Range(0f, 360f);
+
+        GameObject decoration = Instantiate(decorationPrefab, decorationPos, Quaternion.Euler(0, randomRotation, 0), grassTile.transform);
+
+        float scaleVariation = Random.Range(0.8f, 1.2f);
+        decoration.transform.localScale *= scaleVariation;
+
+        decoration.name = $"Decoration_{coords.x}_{coords.y}_{decorationPrefab.name}";
     }
 }
