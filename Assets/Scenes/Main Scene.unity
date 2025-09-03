@@ -409,6 +409,7 @@ MonoBehaviour:
   enemyPrefab: {fileID: 7583552093648287185, guid: 54f45197007f7ce4da074d531b33ceb9, type: 3}
   spawnInterval: 3
   spawnPoints: []
+  hexGridGenerator: {fileID: 1914826908}
 --- !u!4 &592438768
 Transform:
   m_ObjectHideFlags: 0
@@ -556,6 +557,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1282699702}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1914826908 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5717941172062005382, guid: 222158524f9a04344ad1dfa148b65613, type: 3}
+  m_PrefabInstance: {fileID: 94913857917871288}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 537761389a9fa074399481a9919e73bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &94913857917871288
 PrefabInstance:
   m_ObjectHideFlags: 0
