@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3426402169433608318
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1077221284525669199}
+  - component: {fileID: 5717941172062005382}
+  m_Layer: 0
+  m_Name: HexGridGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1077221284525669199
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3426402169433608318}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5717941172062005382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3426402169433608318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 537761389a9fa074399481a9919e73bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  variantSets:
+  - hexType: 0
+    variants:
+    - prefab: {fileID: 5403951172505901801, guid: 6414cae9d792b7645adcea950d43dd30, type: 3}
+      openEdges: 
+  - hexType: 1
+    variants:
+    - prefab: {fileID: 8993281171974011398, guid: 221954130e69ad34599e1dc86427b12e, type: 3}
+      openEdges: 0100000004000000
+    - prefab: {fileID: 8993281171974011398, guid: 221954130e69ad34599e1dc86427b12e, type: 3}
+      openEdges: 0200000005000000
+    - prefab: {fileID: 8993281171974011398, guid: 221954130e69ad34599e1dc86427b12e, type: 3}
+      openEdges: 0000000003000000
+  - hexType: 2
+    variants:
+    - prefab: {fileID: 8394399481855228972, guid: cc5f5c88459958049a2bca515a3a6202, type: 3}
+      openEdges: 
+  gridRadius: 12
+  pathCount: 3
+  hexSize: 1.09
+  decorationPrefabs:
+  - {fileID: 5619749803579577439, guid: 6e60fc6f8e97eb5438e5eca07d4c13a5, type: 3}
+  - {fileID: 1710896937954619506, guid: 7d6966565b97c504fa5397844007521e, type: 3}
+  - {fileID: 964238760879191427, guid: 8cba3f2de6154bf4fb0ad23ea59da0bb, type: 3}
+  - {fileID: 3327264223703713494, guid: 5a5d66353a0368245ae9b7c240a9cb21, type: 3}
+  - {fileID: 5650318213774603925, guid: 64571663c10f58e4f8c59c15c95651bb, type: 3}
+  - {fileID: 7703409521587767646, guid: c15474662d2e36141867fa4d780f1a57, type: 3}
+  - {fileID: 1786144438323333740, guid: c8d60a0193edbb846bf0fe7219c39050, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  decorationChance: 0.562
+  decorationHeightOffset: 0.02

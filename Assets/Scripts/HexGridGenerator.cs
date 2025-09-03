@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using System.Linq;
 using JetBrains.Annotations;
+using Unity.VisualScripting;
 
 public class HexGridGenerator : MonoBehaviour
 {
@@ -14,6 +15,10 @@ public class HexGridGenerator : MonoBehaviour
 
     public int pathCount = 3;
 
+    [Header("Path Separation")]
+    [Range(1, 5)]
+    public int minPathSeparation = 2; 
+
     [Header("Visual Settings")]
     public float hexSize = 1f;
 
@@ -21,10 +26,14 @@ public class HexGridGenerator : MonoBehaviour
     public GameObject[] decorationPrefabs;
     [Range(0f, 1f)]
     public float decorationChance = 0.3f; 
-    public float decorationHeightOffset = 0.02f; 
+    public float decorationHeightOffset = 0.02f;
+
+    [Header("Spawn Point Settings")]
+    public float spawnPointHeight = 0.5f;
 
     private Dictionary<HexType, List<HexVariant>> variantDict;
     private Dictionary<Vector2Int, GameObject> tileMap = new Dictionary<Vector2Int, GameObject>();
+    private List<GameObject> spawnPoints = new List<GameObject>();
 
     // Hex axial directions (0 = East, counter-clockwise)
     private readonly Vector2Int[] HexDirections =
@@ -79,20 +88,42 @@ public class HexGridGenerator : MonoBehaviour
 
     private Vector2Int GetRandomEdgePosition()
     {
-        int side = Random.Range(0, 4);
-        int offset = Random.Range(-gridRadius, gridRadius + 1);
-
-        switch (side)
+        List<Vector2Int> edgePositions = new List<Vector2Int>();
+        for(int q = -gridRadius; q <= gridRadius;q++)
         {
-            case 0: return new Vector2Int(-gridRadius, offset);
-            case 1: return new Vector2Int(gridRadius, offset);
-            case 2: return new Vector2Int(offset, -gridRadius);
-            default: return new Vector2Int(offset, gridRadius);
-        }
-    }
+            for(int r = -gridRadius; r <= gridRadius;r++)
+            {
+                if (Mathf.Abs(q + r) <= gridRadius)
+                {
+                    Vector2Int pos = new Vector2Int(q,r);
 
+                    if(IsEdgePosition(pos))
+                    {
+                        edgePositions.Add(pos);
+                    }
+                }
+            }
+        }
+
+        if(edgePositions.Count > 0)
+        {
+            return edgePositions[Random.Range(0, edgePositions.Count)];
+        }
+
+        return new Vector2Int(-gridRadius, 0);
+    }
+    private bool IsEdgePosition(Vector2Int pos)
+    {
+        int q = pos.x;
+        int r = pos.y;
+        int s = -q - r;
+
+        return Mathf.Abs(q) == gridRadius || Mathf.Abs(r) == gridRadius || Mathf.Abs(s) == gridRadius;
+    }
     private void CreatePathToCastle(Vector2Int start, Vector2Int castle)
     {
+
+        CreateSpawnPoint(start);
         Vector2Int current = start;
         Vector2Int previous = start;
         int currentDirection = -1;
@@ -127,6 +158,26 @@ public class HexGridGenerator : MonoBehaviour
             currentDirection = nextDirection;
         }
     }
+    private void CreateSpawnPoint(Vector2Int coords)
+    {
+        GameObject spawnPoint = new GameObject("spawnPoint");
+
+        Vector3 worldPos = HexToWorld(coords, false);
+        worldPos.y = spawnPointHeight;
+        spawnPoint.transform.position = worldPos;
+
+        spawnPoint.transform.SetParent(this.transform);
+
+        spawnPoints.Add(spawnPoint);
+        Debug.Log($"Spawn point created at hex coords {coords} (world pos {worldPos})");
+
+    }
+
+    public List<GameObject> GetSpawnPoints()
+    {
+        return new List<GameObject>(spawnPoints);
+    }
+
 
     private Vector2Int StepTowardsWithVariation(Vector2Int current, Vector2Int castle, int avoidDirection)
     {
