@@ -23,5 +23,6 @@ public class HexVariantSet
 
 public class HexTile : MonoBehaviour
 {
-    
+    public HexVariant variant;
+    public int rotation;
 }
