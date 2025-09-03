@@ -3,13 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 
 ///a static class to manage all IDendable objects in scene for efficent lookup
-public static class DefendableManager
+public class DefendableManager : MonoBehaviour
 {
-    private static List<IDefendable> allDefendables = new List<IDefendable>();
+    public static DefendableManager Instance { get; private set; }
+    private List<IDefendable> allDefendables = new List<IDefendable>();
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     //adds a new IDefenable object to manager's list
     //"defendable" is the object to add
-    public static void AddDefendable(IDefendable defendable)
+    public void AddDefendable(IDefendable defendable)
     {
         if (!allDefendables.Contains(defendable))
         {
@@ -19,7 +25,7 @@ public static class DefendableManager
 
     //removes IDefendable object from manager's list
     //"defendable" is the object to remove
-    public static void RemoveDefendable(IDefendable defendable)
+    public void RemoveDefendable(IDefendable defendable)
     {
         allDefendables.Remove(defendable);
     }
@@ -27,7 +33,7 @@ public static class DefendableManager
     //returns IDefendable object closest to a given position
     //"position" the position to check from
     // returns closest IDefendable Object, or null if none exist
-    public static IDefendable GetClosestDefendable(Vector3 position)
+    public IDefendable GetClosestDefendable(Vector3 position)
     {
         if (allDefendables.Count == 0)
         {

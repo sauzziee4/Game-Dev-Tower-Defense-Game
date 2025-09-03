@@ -26,12 +26,12 @@ public class Tower : MonoBehaviour, IDefendable
     //adds and removes tower from defendableManager
     private void OnEnable()
     {
-        DefendableManager.AddDefendable(this);
+        DefendableManager.Instance.AddDefendable(this);
     }
 
     private void OnDisable()
     {
-        DefendableManager.RemoveDefendable(this);
+        DefendableManager.Instance.RemoveDefendable(this);
     }
 
     private void Update()

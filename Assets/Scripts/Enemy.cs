@@ -74,7 +74,7 @@ public class Enemy : MonoBehaviour
     private void FindTarget()
     {
         //find all objects in scene that defends
-        IDefendable closestTarget = DefendableManager.GetClosestDefendable(transform.position);
+        IDefendable closestTarget = DefendableManager.Instance.GetClosestDefendable(transform.position);
         if (closestTarget != null)
         {
             target = (closestTarget as MonoBehaviour).transform;
