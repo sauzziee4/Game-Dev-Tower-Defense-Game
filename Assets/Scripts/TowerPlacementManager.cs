@@ -6,10 +6,12 @@ public class TowerPlacementManager : MonoBehaviour
 {
     [Header("Tower Settings")]
     public GameObject[] towerPrefabs;
+
     public LayerMask tileLayerMask = 1;
 
     [Header("UI Feedback")]
     public GameObject placementPreviewPrefab; // Optional: ghost tower for preview
+
     public Material validPlacementMaterial;
     public Material invalidPlacementMaterial;
 
@@ -21,11 +23,12 @@ public class TowerPlacementManager : MonoBehaviour
 
     // Events for UI/game management
     public System.Action<Vector2Int, GameObject> OnTowerPlaced;
+
     public System.Action<Vector2Int> OnTowerRemoved;
 
     private void Start()
     {
-        hexGrid = FindObjectOfType<HexGridGenerator>();
+        hexGrid = FindFirstObjectByType<HexGridGenerator>();
         playerCamera = Camera.main;
 
         if (hexGrid == null)
@@ -172,7 +175,7 @@ public class TowerPlacementManager : MonoBehaviour
             return;
 
         Vector3 worldPos = hexGrid.HexToWorldPublic(hexCoords);
-        worldPos.y += 0.1f; 
+        worldPos.y += 0.1f;
 
         GameObject tower = Instantiate(towerPrefabs[towerIndex], worldPos, Quaternion.identity);
         tower.name = $"Tower_{hexCoords.x}_{hexCoords.y}_{towerPrefabs[towerIndex].name}";
@@ -223,7 +226,6 @@ public class TowerPlacementManager : MonoBehaviour
         worldPos.y += 0.1f;
         currentPreview.transform.position = worldPos;
 
-        
         Renderer[] renderers = currentPreview.GetComponentsInChildren<Renderer>();
         Material materialToUse = isValid ? validPlacementMaterial : invalidPlacementMaterial;
 
