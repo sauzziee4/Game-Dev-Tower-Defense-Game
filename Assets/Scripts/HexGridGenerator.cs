@@ -46,6 +46,15 @@ public class HexGridGenerator : MonoBehaviour
         new Vector2Int(0, -1)    // 5 NW side
     };
 
+    public GameObject GetTileAt(Vector2Int hexCoords)
+    {
+        if (tileMap.ContainsKey(hexCoords))
+        {
+            return tileMap[hexCoords];
+        }
+        return null;
+    }
+
     // An implementation of the A* pathfinding algorithm for the hex grid.
     public List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal)
     {

@@ -63,7 +63,7 @@ public class TowerPlacementManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Alpha1 + i))
             {
                 selectedTowerIndex = i;
-                UpdatePreviewTower();
+                DestroyPreview();
             }
         }
 
@@ -174,7 +174,7 @@ public class TowerPlacementManager : MonoBehaviour
         if (towerIndex >= towerPrefabs.Length)
             return;
 
-        Vector3 worldPos = hexGrid.HexToWorldPublic(hexCoords);
+        Vector3 worldPos = hexGrid.GetHexPosition(hexCoords);
         worldPos.y += 0.1f;
 
         GameObject tower = Instantiate(towerPrefabs[towerIndex], worldPos, Quaternion.identity);
@@ -222,7 +222,7 @@ public class TowerPlacementManager : MonoBehaviour
             CreatePreviewTower();
         }
 
-        Vector3 worldPos = hexGrid.HexToWorldPublic(hexCoords);
+        Vector3 worldPos = hexGrid.GetHexPosition(hexCoords);
         worldPos.y += 0.1f;
         currentPreview.transform.position = worldPos;
 
@@ -273,11 +273,6 @@ public class TowerPlacementManager : MonoBehaviour
         }
     }
 
-    private void UpdatePreviewTower()
-    {
-        DestroyPreview();
-    }
-
     private void DestroyPreview()
     {
         if (currentPreview != null)
@@ -304,7 +299,7 @@ public class TowerPlacementManager : MonoBehaviour
         if (index >= 0 && index < towerPrefabs.Length)
         {
             selectedTowerIndex = index;
-            UpdatePreviewTower();
+            DestroyPreview();
         }
     }
 }
