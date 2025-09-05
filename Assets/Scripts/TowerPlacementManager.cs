@@ -15,7 +15,12 @@ public class TowerPlacementManager : MonoBehaviour
     public Material validPlacementMaterial;
     public Material invalidPlacementMaterial;
 
-    private HexGridGenerator hexGrid;
+    // A reference to the HexGridGenerator for WorldToHex conversion
+    private HexGridGenerator hexGridGenerator;
+
+    // A new reference to the HexGrid for tile lookups
+    private HexGrid hexGrid;
+
     private Camera playerCamera;
     private GameObject currentPreview;
     private int selectedTowerIndex = 0;
@@ -28,12 +33,17 @@ public class TowerPlacementManager : MonoBehaviour
 
     private void Start()
     {
-        hexGrid = FindFirstObjectByType<HexGridGenerator>();
+        hexGridGenerator = FindFirstObjectByType<HexGridGenerator>();
+        hexGrid = FindFirstObjectByType<HexGrid>();
         playerCamera = Camera.main;
 
+        if (hexGridGenerator == null)
+        {
+            Debug.Log("HexGridGenerator not found! Make sure it exists in the scene.");
+        }
         if (hexGrid == null)
         {
-            Debug.LogError("HexGridGenerator not found! Make sure it exists in the scene.");
+            Debug.Log("HexGrid not found! Make sure it exists in the scene.");
         }
     }
 
@@ -100,45 +110,10 @@ public class TowerPlacementManager : MonoBehaviour
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, tileLayerMask))
         {
             // Convert world position back to hex coordinates
-            return WorldToHex(hit.point);
+            return hexGridGenerator.WorldToHex(hit.point);
         }
 
         return null;
-    }
-
-    private Vector2Int WorldToHex(Vector3 worldPos)
-    {
-        // Reverse of HexGridGenerator's HexToWorld function
-        float hexSize = hexGrid.hexSize;
-
-        float q = (Mathf.Sqrt(3f) / 3f * worldPos.x - 1f / 3f * worldPos.z) / hexSize;
-        float r = (2f / 3f * worldPos.z) / hexSize;
-
-        return HexRound(q, r);
-    }
-
-    private Vector2Int HexRound(float q, float r)
-    {
-        float s = -q - r;
-
-        int rq = Mathf.RoundToInt(q);
-        int rr = Mathf.RoundToInt(r);
-        int rs = Mathf.RoundToInt(s);
-
-        float q_diff = Mathf.Abs(rq - q);
-        float r_diff = Mathf.Abs(rr - r);
-        float s_diff = Mathf.Abs(rs - s);
-
-        if (q_diff > r_diff && q_diff > s_diff)
-        {
-            rq = -rr - rs;
-        }
-        else if (r_diff > s_diff)
-        {
-            rr = -rq - rs;
-        }
-
-        return new Vector2Int(rq, rr);
     }
 
     private bool CanPlaceTowerAt(Vector2Int hexCoords)
@@ -174,7 +149,7 @@ public class TowerPlacementManager : MonoBehaviour
         if (towerIndex >= towerPrefabs.Length)
             return;
 
-        Vector3 worldPos = hexGrid.GetHexPosition(hexCoords);
+        Vector3 worldPos = hexGridGenerator.GetHexPosition(hexCoords);
         worldPos.y += 0.1f;
 
         GameObject tower = Instantiate(towerPrefabs[towerIndex], worldPos, Quaternion.identity);
@@ -222,7 +197,7 @@ public class TowerPlacementManager : MonoBehaviour
             CreatePreviewTower();
         }
 
-        Vector3 worldPos = hexGrid.GetHexPosition(hexCoords);
+        Vector3 worldPos = hexGridGenerator.GetHexPosition(hexCoords);
         worldPos.y += 0.1f;
         currentPreview.transform.position = worldPos;
 

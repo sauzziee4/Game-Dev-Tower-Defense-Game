@@ -605,6 +605,30 @@ MonoBehaviour:
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 0}
   m_BuildHeightMesh: 0
+--- !u!114 &1914826912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1328149549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed2a2c8182ec51540a852d4e9b61b4ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1914826913
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1328149549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4d5a983d89378143b48f1863b4b4477, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &94913857917871288
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -676,6 +700,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3426402169433608318, guid: 222158524f9a04344ad1dfa148b65613, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1914826910}
+    - targetCorrespondingSourceObject: {fileID: 3426402169433608318, guid: 222158524f9a04344ad1dfa148b65613, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1914826913}
+    - targetCorrespondingSourceObject: {fileID: 3426402169433608318, guid: 222158524f9a04344ad1dfa148b65613, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1914826912}
   m_SourcePrefab: {fileID: 100100000, guid: 222158524f9a04344ad1dfa148b65613, type: 3}
 --- !u!1001 &166767436526916067
 PrefabInstance:
