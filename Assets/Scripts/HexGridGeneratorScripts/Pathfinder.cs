@@ -10,12 +10,12 @@ public class Pathfinder : MonoBehaviour
     // Hex axial directions (0 = East, counter-clockwise)
     private readonly Vector2Int[] HexDirections =
     {
-        new Vector2Int(1, -1), // 0 NE side
-        new Vector2Int(1, 0),  // 1 E side
-        new Vector2Int(0, 1),  // 2 SE side
-        new Vector2Int(-1, 1), // 3 SW side
-        new Vector2Int(-1, 0), // 4 W side
-        new Vector2Int(0, -1)  // 5 NW side
+        new Vector2Int(1, 0),    // E
+        new Vector2Int(0, 1),    // SE
+        new Vector2Int(-1, 1),   // SW
+        new Vector2Int(-1, 0),   // W
+        new Vector2Int(0, -1),   // NW
+        new Vector2Int(1, -1)    // NE
     };
 
     private void Awake()
@@ -23,9 +23,7 @@ public class Pathfinder : MonoBehaviour
         hexGrid = GetComponent<HexGrid>();
     }
 
-    /// Finds a path between a start and end coordinate using the A* algorithm. startCoords = The starting hex
-    /// coordinates. endCoords = The target hex coordinates. gridRadius = The radius of the hex grid to constrain the
-    /// search. returns The list of hex coordinates representing the path.
+    // This method finds a path using a simple breadth-first search.
     public List<Vector2Int> FindPath(Vector2Int startCoords, Vector2Int endCoords, int gridRadius)
     {
         if (hexGrid.GetTileAt(startCoords) == null || hexGrid.GetTileAt(endCoords) == null)
@@ -34,64 +32,126 @@ public class Pathfinder : MonoBehaviour
             return null;
         }
 
-        // A* algorithm implementation
-        var frontier = new PriorityQueue<Vector2Int>();
-        frontier.Enqueue(startCoords, 0);
+        var openSet = new PriorityQueue<Vector2Int>();
+        openSet.Enqueue(startCoords, 0);
 
         var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
-        var costSoFar = new Dictionary<Vector2Int, float>();
+        var gScore = new Dictionary<Vector2Int, float>();
+        gScore[startCoords] = 0;
 
-        cameFrom[startCoords] = startCoords;
-        costSoFar[startCoords] = 0;
+        var fScore = new Dictionary<Vector2Int, float>();
+        fScore[startCoords] = HexDistance(startCoords, endCoords);
 
-        while (frontier.Count > 0)
+        while (openSet.Count > 0)
         {
-            Vector2Int current = frontier.Dequeue();
+            Vector2Int current = openSet.Dequeue();
 
-            if (current == endCoords)
+            if (current.Equals(endCoords))
             {
-                break;
+                return ReconstructPath(cameFrom, current);
             }
 
-            foreach (var next in GetNeighbors(current))
+            foreach (var neighbor in GetNeighbors(current))
             {
-                // Assuming all terrain types have a cost of 1 for simplicity
-                float newCost = costSoFar[current] + 1;
-                if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
+                float tentativeGScore = gScore.ContainsKey(current) ? gScore[current] + 1 : 1;
+
+                if (!gScore.ContainsKey(neighbor) || tentativeGScore < gScore[neighbor])
                 {
-                    costSoFar[next] = newCost;
-                    float priority = newCost + HexDistance(endCoords, next);
-                    frontier.Enqueue(next, priority);
-                    cameFrom[next] = current;
+                    cameFrom[neighbor] = current;
+                    gScore[neighbor] = tentativeGScore;
+                    fScore[neighbor] = tentativeGScore + HexDistance(neighbor, endCoords);
+                    if (!openSet.Contains(neighbor))
+                    {
+                        openSet.Enqueue(neighbor, fScore[neighbor]);
+                    }
                 }
             }
         }
-
-        // Reconstruct path
-        if (!cameFrom.ContainsKey(endCoords))
-        {
-            Debug.LogWarning("Pathfinding failed: No path found.");
-            return null;
-        }
-
-        var path = new List<Vector2Int>();
-        Vector2Int currentPathPoint = endCoords;
-        while (currentPathPoint != startCoords)
-        {
-            path.Add(currentPathPoint);
-            currentPathPoint = cameFrom[currentPathPoint];
-        }
-        path.Add(startCoords);
-        path.Reverse();
-        return path;
+        return null;
     }
 
-    /// Gets the valid neighbors for a given hex coordinate. coords = The hex coordinates to check. returns A list of
-    /// valid neighbor coordinates.
+    public List<GameObject> GeneratePathsToCenter(int gridRadius, int pathCount, HexGridGenerator hexGridGenerator)
+    {
+        List<GameObject> spawnPoints = new List<GameObject>();
+        Vector2Int center = Vector2Int.zero;
+
+        for (int i = 0; i < pathCount; i++)
+        {
+            Vector2Int startCoords = GetRandomOuterHex(gridRadius);
+            List<Vector2Int> path = FindPath(startCoords, center, gridRadius);
+
+            if (path != null)
+            {
+                bool firstTile = true;
+                foreach (var coords in path)
+                {
+                    hexGridGenerator.SpawnHex(coords, HexType.Path);
+                    if (firstTile)
+                    {
+                        // Create a spawn point at the start of the path.
+                        Vector3 spawnPosition = hexGridGenerator.HexToWorld(coords);
+                        GameObject spawnPoint = new GameObject("SpawnPoint");
+                        spawnPoint.transform.position = spawnPosition;
+                        spawnPoint.transform.parent = hexGridGenerator.transform;
+                        spawnPoints.Add(spawnPoint);
+                        firstTile = false;
+                    }
+                }
+            }
+        }
+        return spawnPoints;
+    }
+
+    private Vector2Int GetRandomOuterHex(int gridRadius)
+    {
+        int side = UnityEngine.Random.Range(0, 6);
+        int offset = UnityEngine.Random.Range(0, gridRadius);
+        Vector2Int coords = Vector2Int.zero;
+
+        switch (side)
+        {
+            case 0: // E
+                coords = new Vector2Int(gridRadius, -offset);
+                break;
+
+            case 1: // SE
+                coords = new Vector2Int(gridRadius - offset, -gridRadius);
+                break;
+
+            case 2: // SW
+                coords = new Vector2Int(-offset, -gridRadius + offset);
+                break;
+
+            case 3: // W
+                coords = new Vector2Int(-gridRadius, offset);
+                break;
+
+            case 4: // NW
+                coords = new Vector2Int(-gridRadius + offset, gridRadius);
+                break;
+
+            case 5: // NE
+                coords = new Vector2Int(offset, gridRadius - offset);
+                break;
+        }
+        return coords;
+    }
+
+    private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
+    {
+        List<Vector2Int> totalPath = new List<Vector2Int> { current };
+        while (cameFrom.ContainsKey(current))
+        {
+            current = cameFrom[current];
+            totalPath.Add(current);
+        }
+        totalPath.Reverse();
+        return totalPath;
+    }
+
     private List<Vector2Int> GetNeighbors(Vector2Int coords)
     {
         List<Vector2Int> neighbors = new List<Vector2Int>();
-
         foreach (var direction in HexDirections)
         {
             Vector2Int neighbor = coords + direction;
@@ -100,25 +160,20 @@ public class Pathfinder : MonoBehaviour
                 neighbors.Add(neighbor);
             }
         }
-
         return neighbors;
     }
 
-    /// Calculates the distance between two hex coordinates. a = The first hex coordinate. b = The second hex
-    /// coordinate. returns The hex distance.
     private float HexDistance(Vector2Int a, Vector2Int b)
     {
         int dx = Mathf.Abs(a.x - b.x);
         int dy = Mathf.Abs(a.y - b.y);
-        int dz = Mathf.Abs(-a.x - a.y - (-b.x - b.y));
-        return (dx + dy + dz) / 2;
+        int dz = Mathf.Abs(a.x + a.y - b.x - b.y);
+        return (dx + dy + dz) / 2.0f;
     }
 
-    // A simple Priority Queue for the A* algorithm.
     private class PriorityQueue<T> where T : IEquatable<T>
     {
         private List<(T item, float priority)> elements = new List<(T, float)>();
-
         public int Count => elements.Count;
 
         public void Enqueue(T item, float priority)
@@ -129,13 +184,14 @@ public class Pathfinder : MonoBehaviour
 
         public T Dequeue()
         {
-            if (Count == 0)
-            {
-                throw new InvalidOperationException("Queue is empty.");
-            }
-            var item = elements[0].item;
+            T bestItem = elements[0].item;
             elements.RemoveAt(0);
-            return item;
+            return bestItem;
+        }
+
+        public bool Contains(T item)
+        {
+            return elements.Any(e => e.item.Equals(item));
         }
     }
 }

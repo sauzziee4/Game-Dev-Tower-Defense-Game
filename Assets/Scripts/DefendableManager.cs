@@ -10,14 +10,22 @@ public class DefendableManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     //adds a new IDefenable object to manager's list
     //"defendable" is the object to add
     public void AddDefendable(IDefendable defendable)
     {
-        if (!allDefendables.Contains(defendable))
+        if (defendable != null && !allDefendables.Contains(defendable))
         {
             allDefendables.Add(defendable);
         }
@@ -27,7 +35,10 @@ public class DefendableManager : MonoBehaviour
     //"defendable" is the object to remove
     public void RemoveDefendable(IDefendable defendable)
     {
-        allDefendables.Remove(defendable);
+        if (defendable != null)
+        {
+            allDefendables.Remove(defendable);
+        }
     }
 
     //returns IDefendable object closest to a given position
@@ -40,8 +51,21 @@ public class DefendableManager : MonoBehaviour
             return null;
         }
 
-        return allDefendables
-            .OrderBy(d => Vector3.Distance((d as MonoBehaviour).transform.position, position))
-            .FirstOrDefault();
+        IDefendable closest = null;
+        float minDistanceSqr = Mathf.Infinity;
+
+        foreach (var defendable in allDefendables)
+        {
+            if (defendable is MonoBehaviour defendableBehaviour)
+            {
+                float distanceSqr = (defendableBehaviour.transform.position - position).sqrMagnitude;
+                if (distanceSqr < minDistanceSqr)
+                {
+                    minDistanceSqr = distanceSqr;
+                    closest = defendable;
+                }
+            }
+        }
+        return closest;
     }
 }

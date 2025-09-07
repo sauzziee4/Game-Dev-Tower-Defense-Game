@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,6 +22,24 @@ public class Enemy : MonoBehaviour
 
     private Transform target; //can be defender or tower
     private HexTile currentTile; //current tile enemy is on for pathfinding
+    // private NavMeshAgent navMeshAgent;
+
+    private List<Vector2Int> path;
+    private int currentPathIndex = 0;
+    private HexGridGenerator hexGridGenerator;
+    private HexGrid hexGrid;
+    private IDefendable centralTower;
+
+    /* private void Awake()
+    {
+        //get navMeshAgent compo and set speed
+        navMeshAgent = GetComponent<NavMeshAgent>();
+        if (navMeshAgent != null)
+        {
+            navMeshAgent.speed = speed;
+        }
+    }
+    */
 
     private void OnEnable()
     {
@@ -34,28 +53,14 @@ public class Enemy : MonoBehaviour
         allEnemies.Remove(this);
     }
 
-    //place holder for pathfinding method
-    public void FollowPath()
+    private void Start()
     {
-        //Implement actual pathfinding logic using hex grid here
-
-        //currently moves towards dummy target using:
-        if (target != null)
-        {
-            Vector3 direction = (target.position - transform.position).normalized;
-            transform.position += direction * speed * Time.deltaTime;
-        }
+        hexGridGenerator = FindFirstObjectByType<HexGridGenerator>();
+        centralTower = hexGridGenerator?.GetTowerInstance()?.GetComponent<IDefendable>();
     }
 
     private void Update()
     {
-        //placeholder for finding target
-        if (target == null)
-        {
-            FindTarget();
-        }
-
-        //placeholder for attacking target
         if (target != null && Vector3.Distance(transform.position, target.position) <= attackRange)
         {
             if (Time.time >= nextAttackTime)
@@ -67,6 +72,46 @@ public class Enemy : MonoBehaviour
         else
         {
             FollowPath();
+        }
+    }
+
+    public void SetPath(List<Vector2Int> newPath)
+    {
+        path = newPath;
+        currentPathIndex = 0;
+        // Set initial target to the first point on the path
+        if (path != null && path.Count > 0)
+        {
+            target = hexGrid.GetTileAt(path[currentPathIndex]).transform;
+        }
+    }
+
+    private void FollowPath()
+    {
+        if (path == null || path.Count == 0) return;
+
+        // Check if we have reached the current point in the path.
+        if (Vector3.Distance(transform.position, hexGridGenerator.HexToWorld(path[currentPathIndex])) < 0.1f)
+        {
+            currentPathIndex++;
+            if (currentPathIndex >= path.Count)
+            {
+                // We have reached the end of the path (the central tower)
+                if (centralTower != null)
+                {
+                    target = (centralTower as MonoBehaviour).transform;
+                    // The enemy is now close enough to attack. We stop pathfinding.
+                    return;
+                }
+            }
+        }
+
+        // Move towards the next point on the path
+        if (currentPathIndex < path.Count)
+        {
+            Vector3 nextWaypoint = hexGridGenerator.HexToWorld(path[currentPathIndex]);
+            Vector3 direction = (nextWaypoint - transform.position).normalized;
+            transform.position += direction * speed * Time.deltaTime;
         }
     }
 

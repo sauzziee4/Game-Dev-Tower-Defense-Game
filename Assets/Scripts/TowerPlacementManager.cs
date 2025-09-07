@@ -45,56 +45,42 @@ public class TowerPlacementManager : MonoBehaviour
         {
             Debug.Log("HexGrid not found! Make sure it exists in the scene.");
         }
+
+        tileLayerMask = LayerMask.GetMask("HexTile");
+        if (tileLayerMask.value == 0)
+        {
+            Debug.LogWarning("HexTile layer not found. Raycasts might not work correctly. Please add a layer named 'HexTile' to your tiles.");
+        }
     }
 
     private void Update()
     {
-        HandleInput();
-        UpdatePlacementPreview();
+        HandlePlacementPreview();
+        HandlePlacementInput();
     }
 
-    private void HandleInput()
+    private void HandlePlacementPreview()
     {
-        // Left click to place tower
-        if (Input.GetMouseButtonDown(0))
-        {
-            TryPlaceTower();
-        }
+        if (selectedTowerIndex >= towerPrefabs.Length) return;
 
-        // Right click to remove tower
-        if (Input.GetMouseButtonDown(1))
-        {
-            TryRemoveTower();
-        }
+        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
 
-        // Number keys to select tower type
-        for (int i = 0; i < towerPrefabs.Length && i < 9; i++)
+        if (Physics.Raycast(ray, out hit, 100f, tileLayerMask))
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+            Vector2Int hexCoords = hexGridGenerator.WorldToHex(hit.point);
+            GameObject hoveredTile = hexGrid.GetTileAt(hexCoords);
+
+            if (hoveredTile != null)
             {
-                selectedTowerIndex = i;
-                DestroyPreview();
+                if (currentPreview == null)
+                {
+                    CreatePreview();
+                }
+
+                bool isValidPlacement = IsValidPlacement(hexCoords, hoveredTile);
+                UpdatePreviewPosition(hit.point, isValidPlacement);
             }
-        }
-
-        // Escape to cancel placement
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            DestroyPreview();
-        }
-    }
-
-    private void UpdatePlacementPreview()
-    {
-        Vector2Int? hoveredCoords = GetHoveredHexCoordinates();
-
-        if (hoveredCoords.HasValue && CanPlaceTowerAt(hoveredCoords.Value))
-        {
-            ShowPlacementPreview(hoveredCoords.Value, true);
-        }
-        else if (hoveredCoords.HasValue)
-        {
-            ShowPlacementPreview(hoveredCoords.Value, false);
         }
         else
         {
@@ -102,142 +88,54 @@ public class TowerPlacementManager : MonoBehaviour
         }
     }
 
-    private Vector2Int? GetHoveredHexCoordinates()
+    private void HandlePlacementInput()
     {
-        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, tileLayerMask))
+        if (Input.GetMouseButtonDown(0) && currentPreview != null)
         {
-            // Convert world position back to hex coordinates
-            return hexGridGenerator.WorldToHex(hit.point);
-        }
+            Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
 
-        return null;
-    }
-
-    private bool CanPlaceTowerAt(Vector2Int hexCoords)
-    {
-        // Check if there's already a tower here
-        if (placedTowers.ContainsKey(hexCoords))
-            return false;
-
-        // Check if this is a valid tile (grass tile, not path or castle)
-        GameObject tile = hexGrid.GetTileAt(hexCoords);
-        if (tile == null)
-            return false;
-
-        // Check if it's a grass tile (not a path or castle)
-        if (tile.name.Contains("PathTile_") || tile.name.Contains("Castle"))
-            return false;
-
-        return true;
-    }
-
-    private void TryPlaceTower()
-    {
-        Vector2Int? coords = GetHoveredHexCoordinates();
-
-        if (coords.HasValue && CanPlaceTowerAt(coords.Value))
-        {
-            PlaceTower(coords.Value, selectedTowerIndex);
-        }
-    }
-
-    private void PlaceTower(Vector2Int hexCoords, int towerIndex)
-    {
-        if (towerIndex >= towerPrefabs.Length)
-            return;
-
-        Vector3 worldPos = hexGridGenerator.GetHexPosition(hexCoords);
-        worldPos.y += 0.1f;
-
-        GameObject tower = Instantiate(towerPrefabs[towerIndex], worldPos, Quaternion.identity);
-        tower.name = $"Tower_{hexCoords.x}_{hexCoords.y}_{towerPrefabs[towerIndex].name}";
-
-        // Store the tower
-        placedTowers[hexCoords] = tower;
-
-        // Invoke event
-        OnTowerPlaced?.Invoke(hexCoords, tower);
-
-        Debug.Log($"Tower placed at hex coordinates {hexCoords}");
-    }
-
-    private void TryRemoveTower()
-    {
-        Vector2Int? coords = GetHoveredHexCoordinates();
-
-        if (coords.HasValue && placedTowers.ContainsKey(coords.Value))
-        {
-            RemoveTower(coords.Value);
-        }
-    }
-
-    private void RemoveTower(Vector2Int hexCoords)
-    {
-        if (placedTowers.TryGetValue(hexCoords, out GameObject tower))
-        {
-            Destroy(tower);
-            placedTowers.Remove(hexCoords);
-
-            OnTowerRemoved?.Invoke(hexCoords);
-
-            Debug.Log($"Tower removed from hex coordinates {hexCoords}");
-        }
-    }
-
-    private void ShowPlacementPreview(Vector2Int hexCoords, bool isValid)
-    {
-        if (placementPreviewPrefab == null || towerPrefabs.Length == 0)
-            return;
-
-        if (currentPreview == null)
-        {
-            CreatePreviewTower();
-        }
-
-        Vector3 worldPos = hexGridGenerator.GetHexPosition(hexCoords);
-        worldPos.y += 0.1f;
-        currentPreview.transform.position = worldPos;
-
-        Renderer[] renderers = currentPreview.GetComponentsInChildren<Renderer>();
-        Material materialToUse = isValid ? validPlacementMaterial : invalidPlacementMaterial;
-
-        foreach (Renderer renderer in renderers)
-        {
-            if (materialToUse != null)
+            if (Physics.Raycast(ray, out hit, 100f, tileLayerMask))
             {
-                renderer.material = materialToUse;
+                Vector2Int hexCoords = hexGridGenerator.WorldToHex(hit.point);
+                GameObject hoveredTile = hexGrid.GetTileAt(hexCoords);
+
+                if (hoveredTile != null && IsValidPlacement(hexCoords, hoveredTile))
+                {
+                    PlaceTower(hexCoords, hit.point);
+                }
             }
         }
-
-        currentPreview.SetActive(true);
     }
 
-    private void CreatePreviewTower()
+    private bool IsValidPlacement(Vector2Int hexCoords, GameObject tile)
+    {
+        // Get the HexTile component to check the tile type.
+        HexTile hexTile = tile.GetComponent<HexTile>();
+        if (hexTile == null) return false;
+
+        // Check if the tile is a Grass tile and no tower is already placed there.
+        return hexTile.variant.hexType == HexType.Grass && !placedTowers.ContainsKey(hexCoords);
+    }
+
+    private void CreatePreview()
     {
         if (placementPreviewPrefab != null)
         {
-            currentPreview = Instantiate(placementPreviewPrefab);
-        }
-        else if (towerPrefabs[selectedTowerIndex] != null)
-        {
-            currentPreview = Instantiate(towerPrefabs[selectedTowerIndex]);
+            GameObject selectedPrefab = towerPrefabs[selectedTowerIndex];
+            currentPreview = Instantiate(selectedPrefab);
 
-            // Disable any scripts on the preview
+            // Disable any scripts on the preview object to prevent unwanted behavior.
             MonoBehaviour[] scripts = currentPreview.GetComponentsInChildren<MonoBehaviour>();
             foreach (MonoBehaviour script in scripts)
             {
                 script.enabled = false;
             }
-        }
 
-        if (currentPreview != null)
-        {
+            // Set the name for easy identification in the hierarchy.
             currentPreview.name = "TowerPreview";
 
-            // Make it slightly transparent
+            // Make it slightly transparent.
             Renderer[] renderers = currentPreview.GetComponentsInChildren<Renderer>();
             foreach (Renderer renderer in renderers)
             {
@@ -246,6 +144,32 @@ public class TowerPlacementManager : MonoBehaviour
                 renderer.material.color = color;
             }
         }
+    }
+
+    private void UpdatePreviewPosition(Vector3 hitPoint, bool isValid)
+    {
+        if (currentPreview == null) return;
+
+        //position preview slightly above ground
+        currentPreview.transform.position = new Vector3(hitPoint.x, 0.05f, hitPoint.z);
+
+        //change material based on validity (for visual feedback)
+        Renderer[] renderers = currentPreview.GetComponentsInChildren<Renderer>();
+        foreach (Renderer renderer in renderers)
+        {
+            renderer.material = isValid ? validPlacementMaterial : invalidPlacementMaterial;
+        }
+    }
+
+    private void PlaceTower(Vector2Int hexCoords, Vector3 hitPoint)
+    {
+        GameObject newTower = Instantiate(towerPrefabs[selectedTowerIndex], new Vector3(hitPoint.x, 0, hitPoint.z), Quaternion.identity);
+        placedTowers.Add(hexCoords, newTower);
+
+        // Destroy the preview after placement.
+        DestroyPreview();
+
+        OnTowerPlaced?.Invoke(hexCoords, newTower);
     }
 
     private void DestroyPreview()

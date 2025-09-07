@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.AI.Navigation;
@@ -13,10 +12,6 @@ public class HexGridGenerator : MonoBehaviour
     public int gridRadius = 8;
 
     public int pathCount = 3;
-
-    [Header("Path Separation")]
-    [Range(1, 5)]
-    public int minPathSeparation = 2;
 
     [Header("Visual Settings")]
     public float hexSize = 1f;
@@ -47,223 +42,151 @@ public class HexGridGenerator : MonoBehaviour
     private HexGrid hexGrid;
     private Pathfinder pathfinder;
 
+    // Hex axial directions for neighbor lookup.
+    private readonly Vector2Int[] HexDirections =
+    {
+         new Vector2Int(1, 0),    // E
+        new Vector2Int(0, 1),    // SE
+        new Vector2Int(-1, 1),   // SW
+        new Vector2Int(-1, 0),   // W
+        new Vector2Int(0, -1),   // NW
+        new Vector2Int(1, -1)    // NE
+    };
+
     private void Awake()
     {
-        InitializeVariantDictionary();
         hexGrid = GetComponent<HexGrid>();
         pathfinder = GetComponent<Pathfinder>();
+        // Ensure the Pathfinder component is on the same GameObject or accessible.
+        if (pathfinder == null)
+        {
+            Debug.LogError("Pathfinder component not found on this GameObject.");
+        }
     }
 
     private void Start()
     {
+        InitializeVariantDictionary();
         GenerateGrid();
-    }
-
-    private void InitializeVariantDictionary()
-    {
-        variantDict = new Dictionary<HexType, List<HexVariant>>();
-        foreach (var set in variantSets)
-        {
-            if (!variantDict.ContainsKey(set.hexType))
-            {
-                variantDict.Add(set.hexType, new List<HexVariant>());
-            }
-            variantDict[set.hexType].AddRange(set.variants);
-        }
     }
 
     public void GenerateGrid()
     {
-        // Clear existing grid
-        foreach (Transform child in transform)
+        if (hexGrid != null)
         {
-            Destroy(child.gameObject);
+            hexGrid.ClearGrid();
         }
-        hexGrid.ClearGrid();
-        spawnPoints.Clear();
 
-        // 1. Generate the base terrain with Grass tiles
+        // Generate the base grass layer and place the central tower.
+        GenerateHexagons();
+        PlaceCentralTower();
+
+        // Generate paths from the edge to the center and collect spawn points. This is the updated method call to work
+        // with the fixed Pathfinder.cs.
+        spawnPoints = GeneratePaths();
+
+        // Populate the remaining empty hexagons with random decorations.
+        GenerateDecorations();
+
+        // After all tiles are in place, build the NavMesh.
+        navMeshSurface.BuildNavMesh();
+    }
+
+    // Creates the central tile and the surrounding grass tiles.
+    private void GenerateHexagons()
+    {
         for (int q = -gridRadius; q <= gridRadius; q++)
         {
             int r1 = Mathf.Max(-gridRadius, -q - gridRadius);
             int r2 = Mathf.Min(gridRadius, -q + gridRadius);
             for (int r = r1; r <= r2; r++)
             {
-                Vector2Int coords = new Vector2Int(q, r);
-                PlaceTile(coords, HexType.Grass);
-            }
-        }
-
-        // 2. Generate multiple paths from the edge to the center
-        Vector2Int centralCoords = Vector2Int.zero;
-        PlaceTile(centralCoords, HexType.Castle);
-
-        // This is a placeholder for the tower instance
-        centralTowerInstance = FindFirstObjectByType<Tower>()?.gameObject;
-        if (centralTowerInstance == null && towerPrefab != null)
-        {
-            Vector3 worldPos = HexToWorld(centralCoords);
-            centralTowerInstance = Instantiate(towerPrefab, worldPos, Quaternion.identity, transform);
-            centralTowerInstance.name = "CentralTower";
-        }
-
-        // Generate multiple paths
-        for (int i = 0; i < pathCount; i++)
-        {
-            GeneratePath(centralCoords);
-        }
-
-        // 3. Re-place tiles on the path
-        foreach (var tile in hexGrid.GetAllTiles())
-        {
-            HexTile hexTile = tile.GetComponent<HexTile>();
-            if (hexTile.variant.openEdges.Length > 0) // Check if the tile is a path tile
-            {
-                ReplaceTileWithVariant(tile, hexTile);
-            }
-        }
-
-        // 4. Decorate the Grass tiles
-        foreach (var tile in hexGrid.GetAllTiles())
-        {
-            HexTile hexTile = tile.GetComponent<HexTile>();
-            if (hexTile.variant.hexType == HexType.Grass)
-            {
-                if (UnityEngine.Random.value < decorationChance)
-                {
-                    DecorateTile(tile);
-                }
-            }
-        }
-
-        // Build the NavMesh on the generated terrain
-        if (navMeshSurface != null)
-        {
-            Debug.Log("Building NavMesh...");
-            navMeshSurface.BuildNavMesh();
-        }
-        else
-        {
-            Debug.Log("NavMeshSurface component not found! Please add it to the HexGridGenerator object.");
-        }
-    }
-
-    private void ReplaceTileWithVariant(GameObject oldTile, HexTile hexTile)
-    {
-        Vector2Int coords = WorldToHex(oldTile.transform.position);
-        Destroy(oldTile);
-        PlaceTile(coords, hexTile.variant.hexType, hexTile.variant.openEdges);
-    }
-
-    private void GeneratePath(Vector2Int endCoords)
-    {
-        // Select a random starting tile on the outer edge
-        Vector2Int startCoords = GetRandomOuterHex();
-
-        // Find a path using A*
-        List<Vector2Int> path = pathfinder.FindPath(startCoords, endCoords, gridRadius);
-
-        if (path != null)
-        {
-            // Mark the tiles on the path
-            for (int i = 0; i < path.Count; i++)
-            {
-                Vector2Int coords = path[i];
-                // Mark the tile as a path tile
-                GameObject tile = hexGrid.GetTileAt(coords);
-                if (tile != null)
-                {
-                    HexTile hexTile = tile.GetComponent<HexTile>();
-                    hexTile.variant = GetRandomVariant(HexType.Path);
-                    // Add start point
-                    if (i == 0)
-                    {
-                        spawnPoints.Add(tile);
-                    }
-                }
+                Vector2Int hexCoords = new Vector2Int(q, r);
+                SpawnHex(hexCoords, HexType.Grass);
             }
         }
     }
 
-    private Vector2Int GetRandomOuterHex()
-    {
-        List<Vector2Int> outerHexes = new List<Vector2Int>();
-        int q, r, s;
-
-        // Iterate through all coordinates to find outer edge tiles
-        for (q = -gridRadius; q <= gridRadius; q++)
-        {
-            r = -q - gridRadius;
-            s = -q - r;
-            if (Mathf.Abs(s) <= gridRadius) outerHexes.Add(new Vector2Int(q, r));
-
-            r = -q + gridRadius;
-            s = -q - r;
-            if (Mathf.Abs(s) <= gridRadius) outerHexes.Add(new Vector2Int(q, r));
-        }
-
-        for (r = -gridRadius; r <= gridRadius; r++)
-        {
-            q = -r - gridRadius;
-            s = -q - r;
-            if (Mathf.Abs(s) <= gridRadius) outerHexes.Add(new Vector2Int(q, r));
-
-            q = -r + gridRadius;
-            s = -q - r;
-            if (Mathf.Abs(s) <= gridRadius) outerHexes.Add(new Vector2Int(q, r));
-        }
-        // Remove duplicates and return a random one
-        return outerHexes.Distinct().ElementAt(UnityEngine.Random.Range(0, outerHexes.Count));
-    }
-
-    private void PlaceTile(Vector2Int coords, HexType type, int[] openEdges = null)
+    public void SpawnHex(Vector2Int coords, HexType type)
     {
         HexVariant variant = GetRandomVariant(type);
-        if (openEdges != null)
+        if (variant != null)
         {
-            // Find a variant that matches the required edges for path connections
-            variant = variantDict[type].FirstOrDefault(v => v.openEdges != null && v.openEdges.SequenceEqual(openEdges));
-            if (variant == null)
+            Vector3 worldPos = HexToWorld(coords);
+            GameObject hex = Instantiate(variant.prefab, worldPos, Quaternion.identity, transform);
+            hexGrid.AddTile(coords, hex);
+        }
+    }
+
+    // Handles the generation and placement of all paths.
+    private List<GameObject> GeneratePaths()
+    {
+        // Now calling the updated Pathfinder method with the correct arguments.
+        return pathfinder.GeneratePathsToCenter(gridRadius, pathCount, this);
+    }
+
+    private void GenerateDecorations()
+    {
+        if (decorationPrefabs.Length == 0) return;
+
+        foreach (var tile in hexGrid.GetAllTiles())
+        {
+            HexTile hexTile = tile.GetComponent<HexTile>();
+            if (hexTile != null && hexTile.variant.hexType == HexType.Grass && UnityEngine.Random.value < decorationChance)
             {
-                variant = GetRandomVariant(type);
+                // Get a random decoration prefab from the array.
+                GameObject decorationPrefab = decorationPrefabs[UnityEngine.Random.Range(0, decorationPrefabs.Length)];
+
+                // Instantiate the decoration with a slight height offset.
+                Vector3 position = tile.transform.position;
+                position.y += decorationHeightOffset;
+                GameObject decoration = Instantiate(decorationPrefab, position, Quaternion.identity, tile.transform);
             }
         }
-
-        Vector3 position = HexToWorld(coords);
-        GameObject tile = Instantiate(variant.prefab, position, Quaternion.identity, transform);
-        HexTile hexTileComponent = tile.AddComponent<HexTile>();
-        hexTileComponent.variant = variant;
-        hexGrid.AddTile(coords, tile);
     }
 
-    private void DecorateTile(GameObject tile)
+    //spawns central tower and marks tile as castle type
+    private void PlaceCentralTower()
     {
-        int randomDecorationIndex = UnityEngine.Random.Range(0, decorationPrefabs.Length);
-        GameObject decorationPrefab = decorationPrefabs[randomDecorationIndex];
-        Vector3 tilePosition = tile.transform.position;
-        Vector3 decorationPosition = new Vector3(
-            tilePosition.x,
-            tilePosition.y + decorationHeightOffset,
-            tilePosition.z
-        );
-        Instantiate(decorationPrefab, decorationPosition, Quaternion.identity, tile.transform);
+        if (centralTowerInstance != null)
+        {
+            Destroy(centralTowerInstance);
+        }
+
+        Vector2Int centerCoords = Vector2Int.zero;
+        SpawnHex(centerCoords, HexType.Castle);
+
+        Vector3 towerPosition = HexToWorld(centerCoords);
+        centralTowerInstance = Instantiate(towerPrefab, towerPosition, Quaternion.identity, transform);
     }
 
+    // Gets a random hex variant for a given hex type.
     private HexVariant GetRandomVariant(HexType type)
     {
-        if (variantDict.ContainsKey(type))
+        if (variantDict.TryGetValue(type, out var variants))
         {
-            var variants = variantDict[type];
-            return variants[UnityEngine.Random.Range(0, variants.Count)];
+            if (variants.Count > 0)
+            {
+                return variants[UnityEngine.Random.Range(0, variants.Count)];
+            }
         }
-        Debug.LogError("No variant set found for type: " + type);
         return null;
     }
 
-    private Vector3 HexToWorld(Vector2Int coords)
+    private void InitializeVariantDictionary()
     {
-        float x = hexSize * (coords.x * 1.5f);
-        float z = hexSize * (coords.y * Mathf.Sqrt(3) + coords.x * Mathf.Sqrt(3) / 2f);
+        variantDict = new Dictionary<HexType, List<HexVariant>>();
+        foreach (HexVariantSet set in variantSets)
+        {
+            variantDict.Add(set.hexType, new List<HexVariant>(set.variants));
+        }
+    }
+
+    public Vector3 HexToWorld(Vector2Int hexCoords)
+
+    {
+        float x = hexSize * (Mathf.Sqrt(3f) * hexCoords.x + Mathf.Sqrt(3f) / 2f * hexCoords.y);
+        float z = hexSize * (3f / 2f * hexCoords.y);
         return new Vector3(x, 0, z);
     }
 
@@ -299,17 +222,14 @@ public class HexGridGenerator : MonoBehaviour
         return new Vector2Int(rq, rr);
     }
 
-    // Gets the world position of a hex coordinate.
-    public Vector3 GetHexPosition(Vector2Int coords)
-    {
-        float x = hexSize * (Mathf.Sqrt(3f) * coords.x + Mathf.Sqrt(3f) / 2f * coords.y);
-        float z = hexSize * (3f / 2f * coords.y);
-        return new Vector3(x, 0, z);
-    }
-
     // Public method to get spawn points
     public List<GameObject> GetSpawnPoints()
     {
         return spawnPoints;
+    }
+
+    public GameObject GetTowerInstance()
+    {
+        return centralTowerInstance;
     }
 }

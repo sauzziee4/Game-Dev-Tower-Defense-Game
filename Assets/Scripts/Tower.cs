@@ -26,12 +26,18 @@ public class Tower : MonoBehaviour, IDefendable
     //adds and removes tower from defendableManager
     private void OnEnable()
     {
-        DefendableManager.Instance.AddDefendable(this);
+        if (DefendableManager.Instance != null)
+        {
+            DefendableManager.Instance.AddDefendable(this);
+        }
     }
 
     private void OnDisable()
     {
-        DefendableManager.Instance.RemoveDefendable(this);
+        if (DefendableManager.Instance != null)
+        {
+            DefendableManager.Instance.RemoveDefendable(this);
+        }
     }
 
     private void Update()
@@ -58,6 +64,7 @@ public class Tower : MonoBehaviour, IDefendable
         }
 
         Enemy closestEnemy = Enemy.allEnemies
+            .Where(enemy => Vector3.Distance(transform.position, enemy.transform.position) <= attackRange)
             .OrderBy(enemy => Vector3.Distance(transform.position, enemy.transform.position))
             .FirstOrDefault();
         return closestEnemy;
