@@ -125,11 +125,22 @@ public class HexGridGenerator : MonoBehaviour
             Vector3 worldPos = HexToWorld(coords);
             GameObject hex = Instantiate(variant.prefab, worldPos, Quaternion.identity, transform);
 
-            // Explicitly set the HexTile's variant.
+            // Get or add the HexTile component
             HexTile hexTile = hex.GetComponent<HexTile>();
-            if (hexTile != null)
+            if (hexTile == null)
             {
-                hexTile.variant = variant;
+                hexTile = hex.AddComponent<HexTile>();
+            }
+
+            // Set up the HexTile properties
+            hexTile.SetVariant(variant);
+            hexTile.SetCoordinates(coords);
+
+            // Apply random rotation for visual variety (optional, mainly for grass tiles)
+            if (type == HexType.Grass)
+            {
+                int randomRotation = Random.Range(0, 6) * 60; // 0, 60, 120, 180, 240, 300 degrees
+                hexTile.SetRotation(randomRotation);
             }
 
             hexGrid.AddTile(coords, hex);

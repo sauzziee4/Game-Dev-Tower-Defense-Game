@@ -7,6 +7,10 @@ public class Pathfinder : MonoBehaviour
 {
     private HexGrid hexGrid;
 
+    [Header("Path Spacing Settings")]
+    [SerializeField]
+    private int minPathDistance = 3; 
+
     // Hex axial directions (0 = East, counter-clockwise)
     private readonly Vector2Int[] HexDirections =
     {
@@ -23,35 +27,88 @@ public class Pathfinder : MonoBehaviour
         hexGrid = GetComponent<HexGrid>();
     }
 
-    // This method finds a path using a simple breadth-first search.
-
     public List<GameObject> GeneratePathsToCenter(int gridRadius, int pathCount, HexGridGenerator hexGridGenerator)
     {
         List<GameObject> spawnPoints = new List<GameObject>();
+        List<Vector2Int> usedStartPoints = new List<Vector2Int>();
         Vector2Int center = Vector2Int.zero;
 
-        for (int i = 0; i < pathCount; i++)
+        int attempts = 0;
+        int maxAttempts = pathCount * 10; // Prevent infinite loops
+
+        while (spawnPoints.Count < pathCount && attempts < maxAttempts)
         {
-            Vector2Int startCoords = FindRandomEdgeTile(gridRadius);
+            attempts++;
+            Vector2Int startCoords = FindRandomEdgeTile(gridRadius, usedStartPoints);
+
+            // If we couldn't find a valid start point, break
+            if (startCoords == Vector2Int.zero && usedStartPoints.Count > 0)
+            {
+                Debug.LogWarning($"Could not find enough valid spawn points with minimum distance {minPathDistance}. Generated {spawnPoints.Count} paths instead of {pathCount}.");
+                break;
+            }
+
             List<Vector2Int> path = FindPath(startCoords, center, gridRadius);
 
             if (path != null)
             {
+                // Add this start point to used points
+                usedStartPoints.Add(startCoords);
+
                 foreach (Vector2Int coords in path)
                 {
-                    // This is the CRUCIAL change: call SpawnHex to change the tile type.
                     hexGridGenerator.SpawnHex(coords, HexType.Path);
                 }
 
-                // Add the first tile of the path as a spawn point
-                GameObject spawnPointTile = hexGrid.GetTileAt(path[0]);
-                if (spawnPointTile != null)
-                {
-                    spawnPoints.Add(spawnPointTile);
-                }
+                // Create an empty GameObject as spawn point at the beginning of the path
+                Vector3 spawnWorldPosition = hexGridGenerator.HexToWorld(path[0]);
+                GameObject spawnPoint = new GameObject("spawnPoint");
+                spawnPoint.transform.position = spawnWorldPosition;
+                spawnPoint.transform.parent = hexGridGenerator.transform; // Parent it to the grid generator
+
+                spawnPoints.Add(spawnPoint);
             }
         }
         return spawnPoints;
+    }
+
+    // Modified to accept used start points and enforce minimum distance
+    private Vector2Int FindRandomEdgeTile(int radius, List<Vector2Int> usedStartPoints)
+    {
+        // Get all tile coordinates
+        List<Vector2Int> allCoords = new List<Vector2Int>();
+        for (int q = -radius; q <= radius; q++)
+        {
+            int r1 = Mathf.Max(-radius, -q - radius);
+            int r2 = Mathf.Min(radius, -q + radius);
+            for (int r = r1; r <= r2; r++)
+            {
+                allCoords.Add(new Vector2Int(q, r));
+            }
+        }
+
+        // Filter for edge tiles
+        List<Vector2Int> edgeTiles = allCoords.Where(coords =>
+            HexDistance(coords, Vector2Int.zero) == radius).ToList();
+
+        // If no used start points yet, any edge tile is valid
+        if (usedStartPoints.Count == 0 && edgeTiles.Count > 0)
+        {
+            return edgeTiles[UnityEngine.Random.Range(0, edgeTiles.Count)];
+        }
+
+        // Filter edge tiles by minimum distance from used start points
+        List<Vector2Int> validEdgeTiles = edgeTiles.Where(edgeTile =>
+            usedStartPoints.All(usedPoint => HexDistance(edgeTile, usedPoint) >= minPathDistance)
+        ).ToList();
+
+        if (validEdgeTiles.Count > 0)
+        {
+            return validEdgeTiles[UnityEngine.Random.Range(0, validEdgeTiles.Count)];
+        }
+
+        // If no valid tiles found, return zero (will be handled by caller)
+        return Vector2Int.zero;
     }
 
     public List<Vector2Int> FindPath(Vector2Int startCoords, Vector2Int endCoords, int gridRadius)
@@ -97,32 +154,6 @@ public class Pathfinder : MonoBehaviour
         return null;
     }
 
-    // Finds a random tile on the edge of the grid.
-    private Vector2Int FindRandomEdgeTile(int radius)
-    {
-        // Get all tile coordinates
-        List<Vector2Int> allCoords = new List<Vector2Int>();
-        for (int q = -radius; q <= radius; q++)
-        {
-            int r1 = Mathf.Max(-radius, -q - radius);
-            int r2 = Mathf.Min(radius, -q + radius);
-            for (int r = r1; r <= r2; r++)
-            {
-                allCoords.Add(new Vector2Int(q, r));
-            }
-        }
-
-        // Filter for edge tiles
-        List<Vector2Int> edgeTiles = allCoords.Where(coords =>
-            HexDistance(coords, Vector2Int.zero) == radius).ToList();
-
-        if (edgeTiles.Count > 0)
-        {
-            return edgeTiles[UnityEngine.Random.Range(0, edgeTiles.Count)];
-        }
-        return Vector2Int.zero;
-    }
-
     private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
     {
         List<Vector2Int> path = new List<Vector2Int> { current };
@@ -157,6 +188,13 @@ public class Pathfinder : MonoBehaviour
         int dy = Mathf.Abs(a.y - b.y);
         int dz = Mathf.Abs(-a.x - a.y - (-b.x - b.y));
         return (dx + dy + dz) / 2;
+    }
+
+    // Public property to adjust minimum path distance
+    public int MinPathDistance
+    {
+        get { return minPathDistance; }
+        set { minPathDistance = Mathf.Max(1, value); }
     }
 
     private class PriorityQueue<T> where T : IEquatable<T>

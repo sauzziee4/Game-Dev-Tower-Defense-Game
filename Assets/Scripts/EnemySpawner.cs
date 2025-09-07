@@ -15,8 +15,9 @@ public class EnemySpawner : MonoBehaviour
 
     [SerializeField]
     private HexGridGenerator hexGridGenerator;
-
     private Pathfinder pathfinder;
+
+    private bool spawnPointsPopulated = false;
 
     private void Start()
     {
@@ -31,6 +32,22 @@ public class EnemySpawner : MonoBehaviour
         PopulateSpawnPoints();
 
         // Starts the coroutine to begin spawning enemies
+        StartCoroutine(InitializeSpawner());
+    }
+
+    private IEnumerator InitializeSpawner()
+    {
+        yield return new WaitForEndOfFrame();
+
+        while (!spawnPointsPopulated)
+        {
+            PopulateSpawnPoints();
+            if(!spawnPointsPopulated)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+
         StartCoroutine(SpawnEnemies());
     }
 
@@ -39,14 +56,24 @@ public class EnemySpawner : MonoBehaviour
         if (hexGridGenerator != null)
         {
             List<GameObject> spawnPointObjects = hexGridGenerator.GetSpawnPoints();
-
-            spawnPoints.Clear();
-            foreach (GameObject spawnPointObj in spawnPointObjects)
+            
+            if (spawnPointObjects != null && spawnPointObjects.Count > 0)
             {
-                if (spawnPointObj != null)
+
+                spawnPoints.Clear();
+                foreach (GameObject spawnPointObj in spawnPointObjects)
                 {
-                    spawnPoints.Add(spawnPointObj.transform);
+                    if (spawnPointObj != null)
+                    {
+                        spawnPoints.Add(spawnPointObj.transform);
+                    }
                 }
+                spawnPointsPopulated = true;
+                Debug.Log($"Successfully populated {spawnPoints.Count} spawn points");
+            }
+            else
+            {
+                Debug.Log($"No spawn points available. ");
             }
         }
     }
@@ -81,4 +108,6 @@ public class EnemySpawner : MonoBehaviour
             }
         }
     }
+
+    
 }
