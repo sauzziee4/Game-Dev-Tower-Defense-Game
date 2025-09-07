@@ -147,19 +147,24 @@ public class HexGridGenerator : MonoBehaviour
     {
         if (decorationPrefabs.Length == 0) return;
 
-        foreach (var tile in hexGrid.GetAllTiles())
-        {
-            HexTile hexTile = tile.GetComponent<HexTile>();
-            // This is the correct check to only decorate the grass tiles that are not part of a path.
-            if (hexTile != null && hexTile.variant.hexType == HexType.Grass && UnityEngine.Random.value < decorationChance)
-            {
-                // Get a random decoration prefab from the array.
-                GameObject decorationPrefab = decorationPrefabs[UnityEngine.Random.Range(0, decorationPrefabs.Length)];
+        // Get only the grass tiles (excluding paths and castle)
+        List<Vector2Int> grassTileCoords = hexGrid.GetTilesOfType(HexType.Grass);
 
-                // Instantiate the decoration with a slight height offset.
-                Vector3 position = tile.transform.position;
-                position.y += decorationHeightOffset;
-                GameObject decoration = Instantiate(decorationPrefab, position, Quaternion.identity, tile.transform);
+        foreach (Vector2Int coords in grassTileCoords)
+        {
+            if (UnityEngine.Random.value < decorationChance)
+            {
+                GameObject tile = hexGrid.GetTileAt(coords);
+                if (tile != null)
+                {
+                    // Get a random decoration prefab from the array.
+                    GameObject decorationPrefab = decorationPrefabs[UnityEngine.Random.Range(0, decorationPrefabs.Length)];
+
+                    // Instantiate the decoration with a slight height offset.
+                    Vector3 position = tile.transform.position;
+                    position.y += decorationHeightOffset;
+                    GameObject decoration = Instantiate(decorationPrefab, position, Quaternion.identity, tile.transform);
+                }
             }
         }
     }

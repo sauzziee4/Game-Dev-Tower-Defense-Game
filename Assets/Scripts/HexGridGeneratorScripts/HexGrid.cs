@@ -47,4 +47,30 @@ public class HexGrid : MonoBehaviour
         }
         tileMap.Clear();
     }
+
+    public List<Vector2Int> GetTilesOfType(HexType type)
+    {
+        List<Vector2Int> tilesOfType = new List<Vector2Int>();
+        foreach (var kvp in tileMap)
+        {
+            GameObject tile = kvp.Value;
+            string tileName = tile.name;
+            switch (type)
+            {
+                case HexType.Grass:
+                    if (tileName.Contains("hex_grass") && !tileName.Contains("hex_path"))
+                        tilesOfType.Add(kvp.Key);
+                    break;
+                case HexType.Path:
+                    if (tileName.Contains("hex_path"))
+                        tilesOfType.Add(kvp.Key);
+                    break;
+                case HexType.Castle:
+                    if (tileName.Contains("Castle"))
+                        tilesOfType.Add(kvp.Key);
+                    break;
+            }
+        }
+        return tilesOfType;
+    }
 }
