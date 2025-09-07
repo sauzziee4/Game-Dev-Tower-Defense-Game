@@ -682,6 +682,14 @@ PrefabInstance:
       value: HexGridGenerator
       objectReference: {fileID: 0}
     - target: {fileID: 5717941172062005382, guid: 222158524f9a04344ad1dfa148b65613, type: 3}
+      propertyPath: towerPrefab
+      value: 
+      objectReference: {fileID: 919132149155446097, guid: dc7c082f0755a9a41bdf2b2e3a5a81c2, type: 3}
+    - target: {fileID: 5717941172062005382, guid: 222158524f9a04344ad1dfa148b65613, type: 3}
+      propertyPath: navMeshSurface
+      value: 
+      objectReference: {fileID: 1914826910}
+    - target: {fileID: 5717941172062005382, guid: 222158524f9a04344ad1dfa148b65613, type: 3}
       propertyPath: 'decorationPrefabs.Array.data[7]'
       value: 
       objectReference: {fileID: 4792136776985710831}

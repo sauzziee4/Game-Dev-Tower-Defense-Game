@@ -36,6 +36,8 @@ public class HexGridGenerator : MonoBehaviour
     [SerializeField]
     private NavMeshSurface navMeshSurface;
 
+    public GameObject navMeshModifierVolumePrefab;
+
     private Dictionary<HexType, List<HexVariant>> variantDict;
     private List<GameObject> spawnPoints = new List<GameObject>();
 
@@ -109,11 +111,27 @@ public class HexGridGenerator : MonoBehaviour
 
     public void SpawnHex(Vector2Int coords, HexType type)
     {
+        // Check if a tile already exists at these coordinates. If so, destroy it before spawning the new one.
+        GameObject existingTile = hexGrid.GetTileAt(coords);
+        if (existingTile != null)
+        {
+            hexGrid.RemoveTile(coords);
+            Destroy(existingTile);
+        }
+
         HexVariant variant = GetRandomVariant(type);
         if (variant != null)
         {
             Vector3 worldPos = HexToWorld(coords);
             GameObject hex = Instantiate(variant.prefab, worldPos, Quaternion.identity, transform);
+
+            // Explicitly set the HexTile's variant.
+            HexTile hexTile = hex.GetComponent<HexTile>();
+            if (hexTile != null)
+            {
+                hexTile.variant = variant;
+            }
+
             hexGrid.AddTile(coords, hex);
         }
     }
@@ -132,6 +150,7 @@ public class HexGridGenerator : MonoBehaviour
         foreach (var tile in hexGrid.GetAllTiles())
         {
             HexTile hexTile = tile.GetComponent<HexTile>();
+            // This is the correct check to only decorate the grass tiles that are not part of a path.
             if (hexTile != null && hexTile.variant.hexType == HexType.Grass && UnityEngine.Random.value < decorationChance)
             {
                 // Get a random decoration prefab from the array.

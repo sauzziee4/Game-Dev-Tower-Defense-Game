@@ -10,10 +10,7 @@ public class HexGrid : MonoBehaviour
     //ADDS TITLE TO HEX GRID INTERNAL DICTIONARY
     public void AddTile(Vector2Int coords, GameObject tile)
     {
-        if (!tileMap.ContainsKey(coords))
-        {
-            tileMap.Add(coords, tile);
-        }
+        tileMap[coords] = tile;
     }
 
     // gets tile GameObject at a given coordinate.
@@ -26,6 +23,15 @@ public class HexGrid : MonoBehaviour
         return null;
     }
 
+    // Removes a tile from the dictionary.
+    public void RemoveTile(Vector2Int coords)
+    {
+        if (tileMap.ContainsKey(coords))
+        {
+            tileMap.Remove(coords);
+        }
+    }
+
     // returns a list of all tiles in the grid returns A list of all tile GameObjects
     public List<GameObject> GetAllTiles()
     {
@@ -35,6 +41,10 @@ public class HexGrid : MonoBehaviour
     // Clears the grid, removing all tiles
     public void ClearGrid()
     {
+        foreach (var tile in tileMap.Values)
+        {
+            Destroy(tile);
+        }
         tileMap.Clear();
     }
 }
