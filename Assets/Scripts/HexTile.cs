@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 //defines the different types of hex tiles available in  game
-//used for the gameplay logic when generating the map and visual implementaion.
+// used for the gameplay logic when generating the map and visual implementaion.
 public enum HexType
 {
     Grass, // open green terrain where turrets can be placed as well as decorations

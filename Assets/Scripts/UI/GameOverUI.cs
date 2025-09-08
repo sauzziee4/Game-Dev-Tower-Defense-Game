@@ -19,8 +19,7 @@ public class GameOverUI : MonoBehaviour
     public CanvasGroup canvasGroup;
 
     private void Start()
-    {
-        
+    {    
         if (restartButton != null)
             restartButton.onClick.AddListener(RestartGame);
         if (mainMenuButton != null)
@@ -28,7 +27,6 @@ public class GameOverUI : MonoBehaviour
         if (quitButton != null)
             quitButton.onClick.AddListener(QuitGame);
 
-        
         if (canvasGroup != null)
         {
             canvasGroup.alpha = 0f;

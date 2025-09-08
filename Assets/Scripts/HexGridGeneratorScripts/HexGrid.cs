@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+//central storage and management system for hexagonal tiles in the grid
+// this script provides effecient lookup, filtering and management for tiles within the game 
+// as well as this it store the data between the grid generator and gameplay systems. 
 public class HexGrid : MonoBehaviour
 {
     //main data structure for storing hex tiles

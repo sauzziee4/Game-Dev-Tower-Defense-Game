@@ -3,10 +3,12 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
+//Manages the state of the game
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    // force game states for 
     [Header("Game State")]
     public bool isGameOver = false;
 
@@ -15,8 +17,8 @@ public class GameManager : MonoBehaviour
     [Header("Game Over Settings")]
     public float gameOverDelay = 2f; // Delay before showing game over screen
 
-    public GameObject gameOverUI; // Assign your game over UI panel
-    public GameObject gameplayUI; // Assign your main gameplay UI
+    public GameObject gameOverUI; 
+    public GameObject gameplayUI; 
 
     [Header("Events")]
     public UnityEvent OnGameOver;
