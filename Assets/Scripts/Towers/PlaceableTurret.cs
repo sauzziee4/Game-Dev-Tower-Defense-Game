@@ -2,11 +2,15 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
+//This class handles the turrets that the player is able to place within the game on the hex grid. 
+//it handles the combat, health, upgrades, visual feedback and the management of resources. 
 public class PlaceableTurret : MonoBehaviour, IDefendable
 {
+    //implements IDefendable
     public float health { get; set; }
     public Vector3 transform_position => transform.position;
 
+    //declarations for turret stats 
     [Header("Turret Stats")]
     public float maxHealth = 100f;
     public float attackRange = 5f;
@@ -38,6 +42,9 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
     private bool showingRange = false;
     private bool isDestroyed = false;
 
+    #region Unity
+    //This will register the turret with the DefendableManager when it is enabled 
+    //It will allow for the defensive system to track and protect the turret 
     private void OnEnable()
     {
         if (DefendableManager.Instance != null)
@@ -46,6 +53,7 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         }
     }
 
+    //this will unregister the turret
     private void OnDisable()
     {
         if (DefendableManager.Instance != null)
@@ -54,8 +62,11 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         }
     }
 
+    //On awake, the turrets healtha nd visual components will be initialized.
+    
     private void Awake()
     {
+        //health is initialized to its max
         health = maxHealth;
 
         // Get renderer for visual feedback
@@ -72,21 +83,23 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         }
     }
 
+    //Set up the visual components and grid positioning after all the objects are initailized. 
+
     private void Start()
     {
-        // Create range indicator if not assigned
+        // Create range indicator if not assigned in the inspector. This will allow for the player to see the range in which their turrets shoot
         if (rangeIndicator == null)
         {
             CreateRangeIndicator();
         }
 
-        // Hide range indicator by default
+        // Hide range indicator by default which will then be shown on mouse hover 
         if (rangeIndicator != null)
         {
             rangeIndicator.SetActive(false);
         }
 
-        // Create health bar if prefab is assigned
+        //health bar
         if (healthBarPrefab != null)
         {
             CreateHealthBar();
@@ -104,21 +117,23 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         }
     }
 
+    //The main loop for the turrets logic. It will target, rotate and fire
+    //It is called every frame that the turret is active. 
     private void Update()
     {
-        // Don't do anything if destroyed
+        // dont't do anything if the turret is destroyed
         if (isDestroyed) return;
 
-        // Update health bar if it exists
+        // update health bar
         UpdateHealthBar();
 
-        // Find and track target
+        // find and track target
         if (currentTarget == null || !IsValidTarget(currentTarget))
         {
             currentTarget = FindClosestEnemy();
         }
 
-        // Rotate to face target
+        // rotate the turrets head to face the target
         if (currentTarget != null && turretHead != null)
         {
             Vector3 direction = (currentTarget.transform.position - turretHead.position).normalized;
@@ -129,7 +144,7 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
             }
         }
 
-        // Fire at target
+        // fire at the target
         if (currentTarget != null && Time.time >= nextFireTime)
         {
             if (IsValidTarget(currentTarget))
@@ -139,7 +154,9 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
             }
         }
     }
+    #endregion
 
+    #region Health and Damage Systems
     // Allows turret to be damaged by enemies
     public void TakeDamage(float damageAmount)
     {
@@ -204,7 +221,10 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
             transform.localScale = Vector3.one * (0.9f + healthPercent * 0.1f);
         }
     }
+    #endregion
 
+    #region Health Bar System
+    //Create and position health bar above the turrets
     private void CreateHealthBar()
     {
         healthBarInstance = Instantiate(healthBarPrefab, transform);
@@ -212,12 +232,12 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         healthBarInstance.transform.localScale = Vector3.one;
     }
 
+    //update the health bar with the health percentage
     private void UpdateHealthBar()
     {
         if (healthBarInstance == null) return;
 
-        // Simple health bar update - you'll need to implement this based on your health bar prefab
-        // This is a basic example assuming the health bar has a child with a scale-based fill
+        
         Transform fillBar = healthBarInstance.transform.GetChild(0);
         if (fillBar != null)
         {
@@ -225,9 +245,13 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
             fillBar.localScale = new Vector3(healthPercent, 1f, 1f);
         }
     }
+    #endregion
 
+    #region Targetting System
+    //Method to find the closest enemy to the turret 
     private Enemy FindClosestEnemy()
     {
+        //it will return a null if no enemies are found
         if (Enemy.allEnemies == null || Enemy.allEnemies.Count == 0)
         {
             return null;
@@ -241,6 +265,7 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         return closestEnemy;
     }
 
+    //this method will checker if an enemy is a valid target which in this case is whether the target exists and is in range 
     private bool IsValidTarget(Enemy enemy)
     {
         if (enemy == null) return false;
@@ -248,13 +273,17 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         float distance = Vector3.Distance(transform.position, enemy.transform.position);
         return distance <= attackRange;
     }
+    #endregion
 
+    #region Combat System
+    //fire a projectile at the current target 
     private void Fire()
     {
+        //checks the valid components before firing 
         if (projectilePrefab == null || projectileSpawnPoint == null || currentTarget == null)
             return;
 
-        // Instantiate projectile
+        // instantiates a projectile at the spawn point 
         GameObject projectileObj = Instantiate(projectilePrefab, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
 
         // Set up projectile
@@ -278,7 +307,11 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         }
     }
 
+    #endregion
+
+    #region Upgrade System for future parts 
     // Upgrade system
+    // This system has not been fully implemented due to the time limit 
     public float GetUpgradeCost()
     {
         var placementManager = Object.FindFirstObjectByType<TurretPlacementManager>();
@@ -330,8 +363,11 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
             Debug.Log("Not enough resources to upgrade!");
         }
     }
+    #endregion
 
+    #region Range Visibilty System
     // Range visualization
+    //This will allow the players to view the range in which their placeable turrets can shoot enenmies 
     public void ShowRange()
     {
         if (rangeIndicator != null && !showingRange && !isDestroyed)
@@ -350,6 +386,7 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         }
     }
 
+    //This will create a range indicator if there isnt one assigned within the inspector. 
     private void CreateRangeIndicator()
     {
         GameObject rangeObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -387,6 +424,9 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
 
         rangeIndicator = rangeObj;
     }
+    #endregion
+
+    #region Mouse Interaction
 
     // Mouse interaction for showing range
     private void OnMouseEnter()
@@ -401,6 +441,7 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
     {
         HideRange();
     }
+    #endregion
 
     // Public properties
     public Vector2Int GridPosition => gridPosition;

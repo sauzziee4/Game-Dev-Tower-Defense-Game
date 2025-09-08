@@ -2,12 +2,17 @@ using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
 
+//This enum defines the different types of hexagon tiles available in the game 
+//it is used for the gameplay logic when generating the map and visual implementaion. 
 public enum HexType
 {
-    Grass,
-    Path,
-    Castle
+    Grass, // open green terrain where turrets can be placed as well as decorations
+    Path, // the tiles in which enemies can walk on but decorations and turrents cannot be placed here
+    Castle // special structure at the center of the map. 
 }
+
+//Represents a specific variant of the hex tile with differences in visual and gameplay aspects/properties
+
 
 [System.Serializable]
 public class HexVariant
@@ -19,6 +24,9 @@ public class HexVariant
     
 }
 
+// groups up multiple variants of the same hex type together 
+//allows for visual variety within the same functionailty of the tile type. 
+// this was implemented due to how the paths were previously set up, this has been changed but for the potential in future parts, the code has remained.
 [System.Serializable]
 public class HexVariantSet
 {
@@ -46,17 +54,20 @@ public class HexTile : MonoBehaviour
     private Renderer tileRenderer;
     private bool isHighlighted = false;
 
+    #region Unity
     private void Awake()
     {
         tileRenderer = GetComponent<Renderer>();
 
-        
+        //stores the origional material if not manually aassigned
+        //this is used for the highlighted hex when placing turrets. 
         if (tileRenderer != null && originalMaterial == null)
         {
             originalMaterial = tileRenderer.material;
         }
     }
 
+    //applys variant material and rotation after all components are initialized
     private void Start()
     {
         
@@ -72,61 +83,37 @@ public class HexTile : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, rotation, 0);
         }
     }
+    #endregion
 
-    public void SetVariant(HexVariant newVariant)
-    {
-        variant = newVariant;
+    #region Variant Management
 
-        if (variant != null && variant.material != null && tileRenderer != null)
-        {
-            tileRenderer.material = variant.material;
-            originalMaterial = variant.material;
-        }
-
-        if (coordinates != Vector2Int.zero) 
-        {
-            string baseName = "";
-            switch (variant.hexType)
-            {
-                case HexType.Grass:
-                    baseName = "hex_grass";
-                    break;
-                case HexType.Path:
-                    baseName = "hex_path";
-                    break;
-                case HexType.Castle:
-                    baseName = "Castle";
-                    break;
-            }
-            gameObject.name = $"{baseName}_{coordinates.x}_{coordinates.y}";
-        }
-    }
-
-    public void SetRotation(int newRotation)
-    {
-        rotation = newRotation;
-        transform.rotation = Quaternion.Euler(0, rotation, 0);
-    }
-
+    //name organization 
     public void SetCoordinates(Vector2Int coords)
     {
         coordinates = coords;
         gameObject.name = $"HexTile_{coords.x}_{coords.y}_{variant?.hexType}";
     }
+    #endregion
 
+    #region Tile Occupancy Systems
+    //Checks if turret can be placed on this tile
+    //it will only allow for the turrets ot be placed on grass tiles that arent occupied 
     public bool CanPlaceTurret()
     {
-        // Can only place turrets on grass tiles that aren't occupied
+        // only place turrets on grass tiles that aren't occupied
         return variant != null &&
                variant.hexType == HexType.Grass &&
                !isOccupied;
     }
 
+    // Marks the tile as occupied 
     public void SetOccupied(GameObject occupier)
     {
         isOccupied = true;
         occupyingObject = occupier;
     }
+    
+    //Unmarks the tile as occupied. This is used when tiles are destroyed. 
 
     public void SetUnoccupied()
     {
@@ -134,6 +121,12 @@ public class HexTile : MonoBehaviour
         occupyingObject = null;
     }
 
+    #endregion
+
+    #region Visual Feedback 
+
+    //toggles highlights state for feedback when placing towers
+    //it will show valid or invalid placements for players. 
     public void Highlight(bool highlight)
     {
         if (tileRenderer == null) return;
@@ -160,71 +153,8 @@ public class HexTile : MonoBehaviour
         }
     }
 
-    public void SetHighlightColor(Color color)
-    {
-        if (tileRenderer == null || originalMaterial == null) return;
+    #endregion
 
-        Material tempMaterial = new Material(originalMaterial);
-        tempMaterial.color = color;
-        tileRenderer.material = tempMaterial;
-        isHighlighted = true;
-    }
-
-    public void ResetMaterial()
-    {
-        if (tileRenderer != null && originalMaterial != null)
-        {
-            tileRenderer.material = originalMaterial;
-            isHighlighted = false;
-        }
-    }
-
-    
-    public bool HasOpenEdge(int edgeIndex)
-    {
-        if (variant == null || variant.openEdges == null) return false;
-
-        
-        int rotatedEdge = (edgeIndex - (rotation / 60)) % 6;
-        if (rotatedEdge < 0) rotatedEdge += 6;
-
-        foreach (int edge in variant.openEdges)
-        {
-            if (edge == rotatedEdge) return true;
-        }
-        return false;
-    }
-
-    public int[] GetOpenEdges()
-    {
-        if (variant == null || variant.openEdges == null) return new int[0];
-
-        
-        int[] rotatedEdges = new int[variant.openEdges.Length];
-        for (int i = 0; i < variant.openEdges.Length; i++)
-        {
-            rotatedEdges[i] = (variant.openEdges[i] + (rotation / 60)) % 6;
-        }
-        return rotatedEdges;
-    }
-
-    
-    private void OnMouseEnter()
-    {
-        
-    }
-
-    private void OnMouseExit()
-    {
-        
-    }
-
-    private void OnMouseDown()
-    {
-        
-    }
-
-    
     public HexType TileType => variant?.hexType ?? HexType.Grass;
     public bool IsPath => variant?.hexType == HexType.Path;
     public bool IsGrass => variant?.hexType == HexType.Grass;
