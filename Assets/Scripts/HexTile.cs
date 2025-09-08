@@ -13,10 +13,10 @@ public enum HexType
 public class HexVariant
 {
     public GameObject prefab;
-    public Material material; // Added for visual feedback
+    public Material material; 
     public HexType hexType;
     public int[] openEdges;
-    //public List<int> openEdges = new List<int>(); //eg {0,3} means straight N-S connection
+    
 }
 
 [System.Serializable]
@@ -50,7 +50,7 @@ public class HexTile : MonoBehaviour
     {
         tileRenderer = GetComponent<Renderer>();
 
-        // Store original material
+        
         if (tileRenderer != null && originalMaterial == null)
         {
             originalMaterial = tileRenderer.material;
@@ -59,14 +59,14 @@ public class HexTile : MonoBehaviour
 
     private void Start()
     {
-        // If variant is set and has a material, use it
+        
         if (variant != null && variant.material != null && tileRenderer != null)
         {
             tileRenderer.material = variant.material;
             originalMaterial = variant.material;
         }
 
-        // Apply rotation if set
+        
         if (rotation != 0)
         {
             transform.rotation = Quaternion.Euler(0, rotation, 0);
@@ -81,6 +81,24 @@ public class HexTile : MonoBehaviour
         {
             tileRenderer.material = variant.material;
             originalMaterial = variant.material;
+        }
+
+        if (coordinates != Vector2Int.zero) 
+        {
+            string baseName = "";
+            switch (variant.hexType)
+            {
+                case HexType.Grass:
+                    baseName = "hex_grass";
+                    break;
+                case HexType.Path:
+                    baseName = "hex_path";
+                    break;
+                case HexType.Castle:
+                    baseName = "Castle";
+                    break;
+            }
+            gameObject.name = $"{baseName}_{coordinates.x}_{coordinates.y}";
         }
     }
 
@@ -128,7 +146,7 @@ public class HexTile : MonoBehaviour
             }
             else
             {
-                // Create a temporary highlight effect by modifying color
+                
                 Material tempMaterial = new Material(originalMaterial);
                 tempMaterial.color = Color.yellow;
                 tileRenderer.material = tempMaterial;
@@ -161,12 +179,12 @@ public class HexTile : MonoBehaviour
         }
     }
 
-    // Edge connection checking methods (for your pathfinding system)
+    
     public bool HasOpenEdge(int edgeIndex)
     {
         if (variant == null || variant.openEdges == null) return false;
 
-        // Adjust for rotation
+        
         int rotatedEdge = (edgeIndex - (rotation / 60)) % 6;
         if (rotatedEdge < 0) rotatedEdge += 6;
 
@@ -181,7 +199,7 @@ public class HexTile : MonoBehaviour
     {
         if (variant == null || variant.openEdges == null) return new int[0];
 
-        // Apply rotation to open edges
+        
         int[] rotatedEdges = new int[variant.openEdges.Length];
         for (int i = 0; i < variant.openEdges.Length; i++)
         {
@@ -190,25 +208,23 @@ public class HexTile : MonoBehaviour
         return rotatedEdges;
     }
 
-    // Mouse interaction events for easier debugging and interaction
+    
     private void OnMouseEnter()
     {
-        // Optional: Add hover effects or debugging info
-        // Debug.Log($"Hovering over {variant?.hexType} tile at {coordinates}");
+        
     }
 
     private void OnMouseExit()
     {
-        // Optional: Remove hover effects
+        
     }
 
     private void OnMouseDown()
     {
-        // Optional: Handle direct tile clicking
-        // Debug.Log($"Clicked on {variant?.hexType} tile at {coordinates}");
+        
     }
 
-    // Public properties for easy access
+    
     public HexType TileType => variant?.hexType ?? HexType.Grass;
     public bool IsPath => variant?.hexType == HexType.Path;
     public bool IsGrass => variant?.hexType == HexType.Grass;

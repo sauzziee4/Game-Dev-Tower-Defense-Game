@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.AI.Navigation;
@@ -88,10 +89,16 @@ public class HexGridGenerator : MonoBehaviour
         spawnPoints = GeneratePaths();
 
         // Populate the remaining empty hexagons with random decorations.
-        GenerateDecorations();
+        StartCoroutine(GenerateDecorationsDelayed());
 
         // After all tiles are in place, build the NavMesh.
         navMeshSurface.BuildNavMesh();
+    }
+
+    private IEnumerator GenerateDecorationsDelayed()
+    {
+        yield return null;
+        GenerateDecorations();
     }
 
     // Creates the central tile and the surrounding grass tiles.
@@ -111,7 +118,7 @@ public class HexGridGenerator : MonoBehaviour
 
     public void SpawnHex(Vector2Int coords, HexType type)
     {
-        // Check if a tile already exists at these coordinates. If so, destroy it before spawning the new one.
+        
         GameObject existingTile = hexGrid.GetTileAt(coords);
         if (existingTile != null)
         {
@@ -125,25 +132,37 @@ public class HexGridGenerator : MonoBehaviour
             Vector3 worldPos = HexToWorld(coords);
             GameObject hex = Instantiate(variant.prefab, worldPos, Quaternion.identity, transform);
 
-            // Get or add the HexTile component
+            
+            string baseName = "";
+            switch (type)
+            {
+                case HexType.Grass:
+                    baseName = "hex_grass";
+                    break;
+                case HexType.Path:
+                    baseName = "hex_path";
+                    break;
+                case HexType.Castle:
+                    baseName = "Castle";
+                    break;
+            }
+            hex.name = $"{baseName}_{coords.x}_{coords.y}";
+
+            
             HexTile hexTile = hex.GetComponent<HexTile>();
             if (hexTile == null)
             {
                 hexTile = hex.AddComponent<HexTile>();
             }
 
-            // Set up the HexTile properties
-            hexTile.SetVariant(variant);
+            
             hexTile.SetCoordinates(coords);
 
-            // Apply random rotation for visual variety (optional, mainly for grass tiles)
-            if (type == HexType.Grass)
-            {
-                int randomRotation = Random.Range(0, 6) * 60; // 0, 60, 120, 180, 240, 300 degrees
-                hexTile.SetRotation(randomRotation);
-            }
-
             hexGrid.AddTile(coords, hex);
+        }
+        else
+        {
+            Debug.LogError($"No variant found for hex type {type}");
         }
     }
 

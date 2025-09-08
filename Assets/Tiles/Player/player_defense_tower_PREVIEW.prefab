@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8993281171974011398
+--- !u!1 &2110109564227069871
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,48 +8,48 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7363950686604812396}
-  - component: {fileID: 4231221703579346147}
-  - component: {fileID: 6417629657916775141}
-  - component: {fileID: 317962579350482714}
-  - component: {fileID: 6612733581236829319}
+  - component: {fileID: 427152190082669547}
+  - component: {fileID: 221431279194121345}
+  - component: {fileID: 3163656429165392214}
+  - component: {fileID: 2682165751568006400}
+  - component: {fileID: 4979598136255139307}
   m_Layer: 0
-  m_Name: hex_path_solid
+  m_Name: player_defense_tower_PREVIEW
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7363950686604812396
+--- !u!4 &427152190082669547
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8993281171974011398}
+  m_GameObject: {fileID: 2110109564227069871}
   serializedVersion: 2
   m_LocalRotation: {x: 0.00000008146034, y: 0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.2, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &4231221703579346147
+--- !u!33 &221431279194121345
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8993281171974011398}
-  m_Mesh: {fileID: 703726867841230225, guid: d3925845f202c7f4783ecf4b800ba7ee, type: 3}
---- !u!23 &6417629657916775141
+  m_GameObject: {fileID: 2110109564227069871}
+  m_Mesh: {fileID: -6587274030877202814, guid: c0d79086466dc214eb7f6d824a74953f, type: 3}
+--- !u!23 &3163656429165392214
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8993281171974011398}
+  m_GameObject: {fileID: 2110109564227069871}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -66,7 +66,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a0df8184ca5cb094cb97f1f1a39fd294, type: 2}
+  - {fileID: 2100000, guid: 15e0a15d45b7b3a42ae71d097b613b05, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -88,13 +88,13 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &317962579350482714
+--- !u!64 &2682165751568006400
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8993281171974011398}
+  m_GameObject: {fileID: 2110109564227069871}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -109,27 +109,27 @@ MeshCollider:
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: 703726867841230225, guid: d3925845f202c7f4783ecf4b800ba7ee, type: 3}
---- !u!114 &6612733581236829319
+  m_Mesh: {fileID: -6587274030877202814, guid: c0d79086466dc214eb7f6d824a74953f, type: 3}
+--- !u!114 &4979598136255139307
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8993281171974011398}
+  m_GameObject: {fileID: 2110109564227069871}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2731449380667094482a32c4c8a032e6, type: 3}
+  m_Script: {fileID: 11500000, guid: c6fa6979278b0c84c8a80d6b27ff2c61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  variant:
-    prefab: {fileID: 0}
-    material: {fileID: 0}
-    hexType: 1
-    openEdges: 
-  rotation: 0
-  coordinates: {x: 0, y: 0}
-  isOccupied: 0
-  occupyingObject: {fileID: 0}
-  originalMaterial: {fileID: 0}
-  highlightMaterial: {fileID: 0}
+  attackRange: 5
+  fireRate: 2
+  damage: 15
+  projectileSpeed: 15
+  turretHead: {fileID: 0}
+  projectileSpawnPoint: {fileID: 0}
+  projectilePrefab: {fileID: 0}
+  rangeIndicator: {fileID: 0}
+  upgradeLevel: 1
+  upgradeCostMultiplier: 1.5
+  upgradeStatMultiplier: 1.3
