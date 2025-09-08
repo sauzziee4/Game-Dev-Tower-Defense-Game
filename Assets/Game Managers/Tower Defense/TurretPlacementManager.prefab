@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   turretPrefab: {fileID: 7297676029622449609, guid: 46bd00c2d1e918a46949f63add69ecce, type: 3}
-  turretCost: 50
+  turretCost: 130
   turretPlacementHeight: 0.1
   validPlacementMaterial: {fileID: 2100000, guid: 675bc6468fdbdbc428ede54892a57490, type: 2}
   invalidPlacementMaterial: {fileID: 2100000, guid: 9fa52e5fb735cbd43890292667ddb8e9, type: 2}

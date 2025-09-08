@@ -3194,8 +3194,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7247820709506175336, guid: 64849bab77847f44f84decdfbbf0e58a, type: 3}
+      propertyPath: m_text
+      value: "Click the button to place turrets. \n"
+      objectReference: {fileID: 0}
+    - target: {fileID: 8319312997469972903, guid: 64849bab77847f44f84decdfbbf0e58a, type: 3}
+      propertyPath: m_text
+      value: Place Turret
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 7646552578404959760, guid: 64849bab77847f44f84decdfbbf0e58a, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 64849bab77847f44f84decdfbbf0e58a, type: 3}
