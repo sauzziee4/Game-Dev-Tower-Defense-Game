@@ -218,6 +218,10 @@ public class HexGridGenerator : MonoBehaviour
         }
     }
     #endregion
+
+    #region Castle Tower System 
+    // Places the castle at the center of the grid 
+    // This is the main objective in which the enemies will want to reach
     private void PlaceCentralTower()
     {
         if (centralTowerInstance != null) Destroy(centralTowerInstance);
@@ -228,7 +232,12 @@ public class HexGridGenerator : MonoBehaviour
             centralTowerInstance = Instantiate(towerPrefab, HexToWorld(centerCoords), Quaternion.identity, transform);
         }
     }
+    #endregion
 
+    #region Variant Management
+
+    // Get a random variant of the specified hex type for variety 
+    // would be used during tile generation for diverse map but in this case we have used standard green due to time constraints. 
     private HexVariant GetRandomVariant(HexType type)
     {
         if (variantDict.TryGetValue(type, out var variants) && variants.Count > 0)
@@ -248,14 +257,19 @@ public class HexGridGenerator : MonoBehaviour
                 variantDict.Add(set.hexType, new List<HexVariant>(set.variants));
         }
     }
+    #endregion
 
+    #region Coordinate Conversion
+
+    // Converts the axial hex coords to world. 
+    // uses standard hexagon grid math for spacing. 
     public Vector3 HexToWorld(Vector2Int hexCoords)
     {
         float x = hexSize * (Mathf.Sqrt(3f) * hexCoords.x + Mathf.Sqrt(3f) / 2f * hexCoords.y);
         float z = hexSize * (3f / 2f * hexCoords.y);
         return new Vector3(x, 0, z);
     }
-
+    
     public Vector2Int WorldToHex(Vector3 worldPosition)
     {
         float q = (Mathf.Sqrt(3f) / 3f * worldPosition.x - 1f / 3f * worldPosition.z) / hexSize;
@@ -276,7 +290,7 @@ public class HexGridGenerator : MonoBehaviour
         else if (r_diff > s_diff) rr = -rq - rs;
         return new Vector2Int(rq, rr);
     }
-
+    #endregion
     public List<Vector2Int> GetSpawnPointCoords() => spawnPointCoords;
 
     public GameObject GetTileAt(Vector2Int coords) => hexGrid.GetTileAt(coords);
