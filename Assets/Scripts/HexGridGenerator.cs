@@ -1,11 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Unity.AI.Navigation;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class HexGridGenerator : MonoBehaviour
 {
+    //event that broadcast when grid generation is complete
+    public static event Action OnGridGenerated;
+
     [Header("Tile Variants")]
     public HexVariantSet[] variantSets;
 
@@ -37,24 +43,11 @@ public class HexGridGenerator : MonoBehaviour
     [SerializeField]
     private NavMeshSurface navMeshSurface;
 
-    public GameObject navMeshModifierVolumePrefab;
-
     private Dictionary<HexType, List<HexVariant>> variantDict;
     private List<GameObject> spawnPoints = new List<GameObject>();
 
     private HexGrid hexGrid;
     private Pathfinder pathfinder;
-
-    // Hex axial directions for neighbor lookup.
-    private readonly Vector2Int[] HexDirections =
-    {
-         new Vector2Int(1, 0),    // E
-        new Vector2Int(0, 1),    // SE
-        new Vector2Int(-1, 1),   // SW
-        new Vector2Int(-1, 0),   // W
-        new Vector2Int(0, -1),   // NW
-        new Vector2Int(1, -1)    // NE
-    };
 
     private void Awake()
     {
@@ -63,7 +56,7 @@ public class HexGridGenerator : MonoBehaviour
         // Ensure the Pathfinder component is on the same GameObject or accessible.
         if (pathfinder == null)
         {
-            Debug.LogError("Pathfinder component not found on this GameObject.");
+            UnityEngine.Debug.LogError("Pathfinder component not found on this GameObject.");
         }
     }
 
@@ -90,9 +83,28 @@ public class HexGridGenerator : MonoBehaviour
 
         // Populate the remaining empty hexagons with random decorations.
         StartCoroutine(GenerateDecorationsDelayed());
+        // GenerateDecorations() idk if i should add this ima wait first before messing things up again yoh
 
         // After all tiles are in place, build the NavMesh.
-        navMeshSurface.BuildNavMesh();
+        StartCoroutine(BuildNavMeshDelayed());
+    }
+
+    private IEnumerator BuildNavMeshDelayed()
+    {
+        yield return new WaitForEndOfFrame();
+
+        if (navMeshSurface != null)
+        {
+            navMeshSurface.BuildNavMesh();
+            UnityEngine.Debug.Log("NavMesh built successfully.");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError("NavMeshSurface is not assigned in the HexGridGenerator!");
+        }
+
+        OnGridGenerated?.Invoke();
+        UnityEngine.Debug.Log("Grid generation complete. OnGridGenerated event invoked.");
     }
 
     private IEnumerator GenerateDecorationsDelayed()
@@ -118,7 +130,6 @@ public class HexGridGenerator : MonoBehaviour
 
     public void SpawnHex(Vector2Int coords, HexType type)
     {
-        
         GameObject existingTile = hexGrid.GetTileAt(coords);
         if (existingTile != null)
         {
@@ -132,37 +143,49 @@ public class HexGridGenerator : MonoBehaviour
             Vector3 worldPos = HexToWorld(coords);
             GameObject hex = Instantiate(variant.prefab, worldPos, Quaternion.identity, transform);
 
-            
             string baseName = "";
             switch (type)
             {
                 case HexType.Grass:
                     baseName = "hex_grass";
                     break;
+
                 case HexType.Path:
                     baseName = "hex_path";
                     break;
+
                 case HexType.Castle:
                     baseName = "Castle";
                     break;
             }
             hex.name = $"{baseName}_{coords.x}_{coords.y}";
 
-            
             HexTile hexTile = hex.GetComponent<HexTile>();
             if (hexTile == null)
             {
                 hexTile = hex.AddComponent<HexTile>();
             }
 
-            
             hexTile.SetCoordinates(coords);
 
             hexGrid.AddTile(coords, hex);
+
+            NavMeshModifier modifier = hex.AddComponent<NavMeshModifier>();
+            modifier.overrideArea = true;
+
+            if (type == HexType.Path)
+            {
+                modifier.area = 3; //3 is "path" in navMesh area settings
+            }
+            else
+            {
+                UnityEngine.Debug.LogError($"No variant found for hex type {type}");
+                modifier.area = 4; //4 is "grass"
+            }
         }
         else
         {
-            Debug.LogError($"No variant found for hex type {type}");
+            UnityEngine.Debug.LogError($"No variant found for hex type {type}");
         }
     }
 
@@ -284,13 +307,7 @@ public class HexGridGenerator : MonoBehaviour
     }
 
     // Public method to get spawn points
-    public List<GameObject> GetSpawnPoints()
-    {
-        return spawnPoints;
-    }
+    public List<GameObject> GetSpawnPoints() => spawnPoints;
 
-    public GameObject GetTowerInstance()
-    {
-        return centralTowerInstance;
-    }
+    public GameObject GetTowerInstance() => centralTowerInstance;
 }
