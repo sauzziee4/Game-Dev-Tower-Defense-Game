@@ -7,7 +7,7 @@ public class HexGrid : MonoBehaviour
     //main data structure for storing hex tiles
     private Dictionary<Vector2Int, GameObject> tileMap = new Dictionary<Vector2Int, GameObject>();
 
-    //ADDS TITLE TO HEX GRID INTERNAL DICTIONARY
+    
     public void AddTile(Vector2Int coords, GameObject tile)
     {
         tileMap[coords] = tile;
@@ -80,4 +80,19 @@ public class HexGrid : MonoBehaviour
         return tilesOfType;
     }
 
+    public Dictionary<Vector2Int, GameObject> GetTileMapOfType(HexType type)
+    {
+        Dictionary<Vector2Int, GameObject> tilesOfType = new Dictionary<Vector2Int, GameObject>();
+        foreach (var kvp in tileMap)
+        {
+            GameObject tile = kvp.Value;
+            HexTile hexTile = tile.GetComponent<HexTile>();
+
+            if (hexTile != null && hexTile.variant != null && hexTile.variant.hexType == type)
+            {
+                tilesOfType.Add(kvp.Key, tile);
+            }
+        }
+        return tilesOfType;
+    }
 }

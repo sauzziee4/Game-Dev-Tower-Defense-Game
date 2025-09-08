@@ -14,7 +14,6 @@ public class HexGridGenerator : MonoBehaviour
 
     [Header("Map Settings")]
     public int gridRadius = 8;
-
     public int pathCount = 3;
 
     [Header("Visual Settings")]
@@ -22,20 +21,23 @@ public class HexGridGenerator : MonoBehaviour
 
     [Header("Decoration Settings")]
     public GameObject[] decorationPrefabs;
-
     [Range(0f, 1f)]
     public float decorationChance = 0.3f;
-
     public float decorationHeightOffset = 0.02f;
 
     [Header("Tower Settings")]
     public GameObject towerPrefab;
-
     private GameObject centralTowerInstance;
 
     [Header("NavMesh Settings")]
     [SerializeField]
     private NavMeshSurface navMeshSurface;
+
+    [Header("NavMesh Area Settings")]
+    [Tooltip("Make path tiles walkable (usually 0) and grass tiles non-walkable (usually 1)")]
+    public bool useCustomNavMeshAreas = false;
+    public int pathNavMeshArea = 0; // Walkable by default
+    public int grassNavMeshArea = 1; // Not Walkable by default
 
     private Dictionary<HexType, List<HexVariant>> variantDict;
     private List<Vector2Int> spawnPointCoords = new List<Vector2Int>();
@@ -126,9 +128,35 @@ public class HexGridGenerator : MonoBehaviour
             hexTile.SetCoordinates(coords);
             hexGrid.AddTile(coords, hex);
 
-            NavMeshModifier modifier = hex.GetComponent<NavMeshModifier>() ?? hex.AddComponent<NavMeshModifier>();
-            modifier.overrideArea = true;
-            modifier.area = (type == HexType.Path) ? 3 : 4;
+            // Set up NavMesh modifier for pathfinding
+            if (useCustomNavMeshAreas)
+            {
+                NavMeshModifier modifier = hex.GetComponent<NavMeshModifier>() ?? hex.AddComponent<NavMeshModifier>();
+                modifier.overrideArea = true;
+
+                switch (type)
+                {
+                    case HexType.Path:
+                        modifier.area = pathNavMeshArea; // Usually 0 (Walkable)
+                        break;
+                    case HexType.Grass:
+                        modifier.area = grassNavMeshArea; // Usually 1 (Not Walkable) 
+                        break;
+                    case HexType.Castle:
+                        modifier.area = pathNavMeshArea; // Castle should be walkable
+                        break;
+                }
+            }
+            else
+            {
+                // Don't override areas, let Unity use default behavior
+                // All tiles will be walkable by default if they have colliders
+                NavMeshModifier modifier = hex.GetComponent<NavMeshModifier>();
+                if (modifier != null)
+                {
+                    modifier.overrideArea = false;
+                }
+            }
         }
     }
 

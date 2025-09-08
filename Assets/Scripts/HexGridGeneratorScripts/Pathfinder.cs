@@ -17,6 +17,9 @@ public class Pathfinder : MonoBehaviour
         new Vector2Int(-1, 0), new Vector2Int(0, -1), new Vector2Int(1, -1)
     };
 
+    // Store the generated paths for enemy navigation
+    private List<List<Vector2Int>> generatedPaths = new List<List<Vector2Int>>();
+
     private void Awake()
     {
         hexGrid = GetComponent<HexGrid>();
@@ -27,6 +30,7 @@ public class Pathfinder : MonoBehaviour
         List<Vector2Int> spawnPointCoords = new List<Vector2Int>();
         List<Vector2Int> usedStartPoints = new List<Vector2Int>();
         Vector2Int center = Vector2Int.zero;
+        generatedPaths.Clear();
 
         int attempts = 0;
         int maxAttempts = pathCount * 10;
@@ -47,14 +51,38 @@ public class Pathfinder : MonoBehaviour
             if (path != null && path.Count > 0)
             {
                 usedStartPoints.Add(startCoords);
+                generatedPaths.Add(new List<Vector2Int>(path)); // Store the complete path
+
                 foreach (Vector2Int coords in path)
                 {
                     hexGridGenerator.SpawnHex(coords, HexType.Path);
                 }
-                spawnPointCoords.Add(path[0]);
+                spawnPointCoords.Add(path[0]); // First coordinate is spawn point
             }
         }
+
+        Debug.Log($"Generated {generatedPaths.Count} paths with spawn points: {string.Join(", ", spawnPointCoords)}");
         return spawnPointCoords;
+    }
+
+    // Get a specific path by spawn point coordinate
+    public List<Vector2Int> GetPathFromSpawnPoint(Vector2Int spawnPoint)
+    {
+        foreach (var path in generatedPaths)
+        {
+            if (path.Count > 0 && path[0] == spawnPoint)
+            {
+                return new List<Vector2Int>(path);
+            }
+        }
+        Debug.LogWarning($"No path found for spawn point {spawnPoint}");
+        return new List<Vector2Int>();
+    }
+
+    // Get all generated paths
+    public List<List<Vector2Int>> GetAllPaths()
+    {
+        return new List<List<Vector2Int>>(generatedPaths);
     }
 
     private Vector2Int FindRandomEdgeTile(int radius, List<Vector2Int> usedStartPoints)

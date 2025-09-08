@@ -159,6 +159,7 @@ MonoBehaviour:
   attackRate: 1.5
   aggroRange: 10
   resourceReward: 10
+  pathNodeReachDistance: 1
 --- !u!195 &466841660888896845
 NavMeshAgent:
   m_ObjectHideFlags: 0

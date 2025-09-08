@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 706108942562933744}
   - component: {fileID: 430952747271517940}
   - component: {fileID: 7308176175868089316}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: hex_grass
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -122,3 +122,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2731449380667094482a32c4c8a032e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  variant:
+    prefab: {fileID: 0}
+    material: {fileID: 0}
+    hexType: 0
+    openEdges: 
+  rotation: 0
+  coordinates: {x: 0, y: 0}
+  isOccupied: 0
+  occupyingObject: {fileID: 0}
+  originalMaterial: {fileID: 0}
+  highlightMaterial: {fileID: 0}

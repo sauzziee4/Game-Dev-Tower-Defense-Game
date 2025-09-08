@@ -408,11 +408,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 7583552093648287185, guid: 54f45197007f7ce4da074d531b33ceb9, type: 3}
   spawnInterval: 3
-  spawnPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  spawnHeightOffset: 0.5
   hexGridGenerator: {fileID: 1914826908}
+  enableDebugLogs: 1
 --- !u!4 &592438768
 Transform:
   m_ObjectHideFlags: 0
@@ -698,7 +696,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   m_UseGeometry: 0
-  m_DefaultArea: 0
+  m_DefaultArea: 3
   m_GenerateLinks: 0
   m_IgnoreNavMeshAgent: 1
   m_IgnoreNavMeshObstacle: 1
