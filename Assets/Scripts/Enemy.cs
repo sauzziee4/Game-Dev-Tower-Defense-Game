@@ -108,38 +108,62 @@ public class Enemy : MonoBehaviour, IDefendable
     {
         if (agent == null || Time.timeScale == 0) return;
 
-        if (currentTarget == null || (currentTarget as MonoBehaviour)?.gameObject == null)
+        // More robust target validation
+        if (!IsValidTarget(currentTarget))
         {
-            //if target destroyed, find new one
+            currentTarget = null;
             FindBestTarget();
+
             if (currentTarget == null)
             {
                 agent.isStopped = true;
+                return;
             }
         }
 
-        //check if inrange to attack current target
-        if (Vector3.Distance(transform.position, currentTarget.transform_position) <= attackRange)
+        // Ensure we have a valid target before proceeding
+        if (currentTarget != null && IsValidTarget(currentTarget))
         {
-            agent.isStopped = true; //stop moving
+            float distanceToTarget = Vector3.Distance(transform.position, currentTarget.transform_position);
 
-            if (Time.time >= nextAttackTime)
+            // Check if in range to attack current target
+            if (distanceToTarget <= attackRange)
             {
-                AttackTarget();
-                nextAttackTime = Time.time + 1f / attackRate;
+                agent.isStopped = true; // stop moving
+
+                if (Time.time >= nextAttackTime)
+                {
+                    AttackTarget();
+                    nextAttackTime = Time.time + 1f / attackRate;
+                }
             }
-        }
-        else
-        {
-            agent.isStopped = false;
-            //make sure agent is still heading towards current target
-            if (agent.destination != currentTarget.transform_position)
+            else
             {
-                agent.SetDestination(currentTarget.transform_position);
+                agent.isStopped = false;
+                // Make sure agent is still heading towards current target
+                if (agent.destination != currentTarget.transform_position)
+                {
+                    agent.SetDestination(currentTarget.transform_position);
+                }
             }
         }
     }
+    private bool IsValidTarget(IDefendable target)
+    {
+        if (target == null) return false;
 
+        // Check if the target is a MonoBehaviour and if its GameObject still exists
+        if (target is MonoBehaviour targetMono)
+        {
+            // This will return true if the GameObject has been destroyed
+            if (targetMono == null || targetMono.gameObject == null)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
     private void FindBestTarget()
     {
         IDefendable closestDefender = null;
@@ -183,9 +207,14 @@ public class Enemy : MonoBehaviour, IDefendable
     //inflicts damage on current target
     private void AttackTarget()
     {
-        if (currentTarget != null)
+        if (IsValidTarget(currentTarget))
         {
             currentTarget.TakeDamage(attackDamage);
+        }
+        else
+        {
+            // Target became invalid during attack, clear it
+            currentTarget = null;
         }
     }
 

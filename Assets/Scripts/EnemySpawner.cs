@@ -16,6 +16,8 @@ public class EnemySpawner : MonoBehaviour
 
     private List<Vector2Int> spawnPointCoords = new List<Vector2Int>();
     private bool IsReadyToSpawn = false;
+    private bool isSpawning = false; // Track if spawning is active
+    private Coroutine spawnCoroutine; // Reference to the spawning coroutine
 
     //debugging
     [Header("Debug")]
@@ -67,7 +69,7 @@ public class EnemySpawner : MonoBehaviour
                 {
                     Debug.Log($"EnemySpawner: Spawn points: {string.Join(", ", spawnPointCoords)}");
                 }
-                StartCoroutine(SpawnEnemies());
+                StartSpawning();
             }
             else
             {
@@ -93,13 +95,60 @@ public class EnemySpawner : MonoBehaviour
             {
                 IsReadyToSpawn = true;
                 Debug.Log("EnemySpawner: Successfully initialized on retry");
-                StartCoroutine(SpawnEnemies());
+                StartSpawning();
             }
             else
             {
                 Debug.LogError("EnemySpawner: Still no spawn points after retry");
             }
         }
+    }
+
+    
+    public void StartSpawning()
+    {
+        if (!isSpawning && IsReadyToSpawn)
+        {
+            isSpawning = true;
+            spawnCoroutine = StartCoroutine(SpawnEnemies());
+            if (enableDebugLogs)
+                Debug.Log("EnemySpawner: Started spawning enemies");
+        }
+    }
+
+    
+    public void StopSpawning()
+    {
+        if (isSpawning)
+        {
+            isSpawning = false;
+
+            if (spawnCoroutine != null)
+            {
+                StopCoroutine(spawnCoroutine);
+                spawnCoroutine = null;
+            }
+
+            if (enableDebugLogs)
+                Debug.Log("EnemySpawner: Stopped spawning enemies");
+        }
+    }
+
+    
+    public void ResumeSpawning()
+    {
+        if (!isSpawning && IsReadyToSpawn)
+        {
+            StartSpawning();
+            if (enableDebugLogs)
+                Debug.Log("EnemySpawner: Resumed spawning enemies");
+        }
+    }
+
+    
+    public bool IsSpawning()
+    {
+        return isSpawning;
     }
 
     // Coroutine that spawns enemies at a set interval
@@ -111,7 +160,7 @@ public class EnemySpawner : MonoBehaviour
         // Wait a bit before starting to ensure everything is properly initialized
         yield return new WaitForSeconds(1f);
 
-        while (true)
+        while (isSpawning) // Changed from while(true) to while(isSpawning)
         {
             if (IsReadyToSpawn && spawnPointCoords.Count > 0 && enemyPrefab != null)
             {
@@ -125,6 +174,9 @@ public class EnemySpawner : MonoBehaviour
             // Wait for the specified interval before spawning next enemy
             yield return new WaitForSeconds(spawnInterval);
         }
+
+        if (enableDebugLogs)
+            Debug.Log("EnemySpawner: Spawn loop ended");
     }
 
     private void SpawnSingleEnemy()
@@ -178,46 +230,5 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    // Public method to manually spawn an enemy (for testing)
-    public void SpawnEnemyManually()
-    {
-        if (IsReadyToSpawn && spawnPointCoords.Count > 0 && enemyPrefab != null)
-        {
-            SpawnSingleEnemy();
-        }
-        else
-        {
-            Debug.LogWarning("EnemySpawner: Cannot manually spawn enemy - not ready or missing components");
-        }
-    }
-
-    // Method to pause/resume spawning
-    public void SetSpawningEnabled(bool enabled)
-    {
-        if (enabled && !IsReadyToSpawn && spawnPointCoords.Count > 0)
-        {
-            IsReadyToSpawn = true;
-            StartCoroutine(SpawnEnemies());
-        }
-        else if (!enabled)
-        {
-            IsReadyToSpawn = false;
-            StopAllCoroutines();
-        }
-    }
-
-    // Debug visualization
-    private void OnDrawGizmosSelected()
-    {
-        if (spawnPointCoords != null && hexGridGenerator != null)
-        {
-            Gizmos.color = Color.yellow;
-            foreach (Vector2Int coord in spawnPointCoords)
-            {
-                Vector3 worldPos = hexGridGenerator.HexToWorld(coord);
-                Gizmos.DrawWireSphere(worldPos + Vector3.up * spawnHeightOffset, 1f);
-                Gizmos.DrawLine(worldPos, worldPos + Vector3.up * 2f);
-            }
-        }
-    }
+   
 }

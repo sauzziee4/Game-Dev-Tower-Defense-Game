@@ -3330,6 +3330,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5760010959264843948, guid: 32bdd069a3e4c9845ab88f0023badffa, type: 3}
+      propertyPath: turretCost
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 5760010959264843948, guid: 32bdd069a3e4c9845ab88f0023badffa, type: 3}
       propertyPath: resourceText
       value: 
       objectReference: {fileID: 1383549013}

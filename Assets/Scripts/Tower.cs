@@ -85,8 +85,7 @@ public class Tower : MonoBehaviour, IDefendable
         }
     }
 
-    //reduces tower heatlh and checks for game over
-    //damage = amount of health to be reduced
+    
     public void TakeDamage(float damage)
     {
         health -= damage;
@@ -95,8 +94,18 @@ public class Tower : MonoBehaviour, IDefendable
         if (health <= 0)
         {
             health = 0; //ensure does not go into negative
-            //implement Game Over logic here
-            Debug.Log("Game Over");
+
+            // Trigger game over through GameManager
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.TriggerGameOver();
+            }
+            else
+            {
+                Debug.LogError("GameManager not found! Cannot trigger game over.");
+            }
+
+           
         }
     }
 }
