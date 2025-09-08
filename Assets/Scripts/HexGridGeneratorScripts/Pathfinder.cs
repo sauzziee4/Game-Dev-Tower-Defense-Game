@@ -25,8 +25,10 @@ public class Pathfinder : MonoBehaviour
         hexGrid = GetComponent<HexGrid>();
     }
 
+    //uses A* pathfining algorithm to calculate routes and ensure paths are reasonably spaced out
     public List<Vector2Int> GeneratePathsToCenter(int gridRadius, int pathCount, HexGridGenerator hexGridGenerator)
     {
+        //stores first coordinate of each path, becomes enemy spawn points
         List<Vector2Int> spawnPointCoords = new List<Vector2Int>();
         List<Vector2Int> usedStartPoints = new List<Vector2Int>();
         Vector2Int center = Vector2Int.zero;
@@ -35,17 +37,21 @@ public class Pathfinder : MonoBehaviour
         int attempts = 0;
         int maxAttempts = pathCount * 10;
 
+        //loops runs until path is succesfully created correct number of paths or runs out of attempts
         while (spawnPointCoords.Count < pathCount && attempts < maxAttempts)
         {
             attempts++;
             Vector2Int startCoords = FindRandomEdgeTile(gridRadius, usedStartPoints);
 
+            //if pathfinder cant find valid starting point
             if (startCoords == Vector2Int.zero && usedStartPoints.Count > 0)
             {
                 Debug.LogWarning($"Could not find enough valid spawn points. Generated {spawnPointCoords.Count} paths.");
-                break;
+                break; //exit the while loop
             }
 
+            //A* pathfinding
+            //calculate most direct route from start coords to center
             List<Vector2Int> path = FindPath(startCoords, center, gridRadius);
 
             if (path != null && path.Count > 0)
@@ -53,6 +59,7 @@ public class Pathfinder : MonoBehaviour
                 usedStartPoints.Add(startCoords);
                 generatedPaths.Add(new List<Vector2Int>(path)); // Store the complete path
 
+                //loop through every coords in calculated path
                 foreach (Vector2Int coords in path)
                 {
                     hexGridGenerator.SpawnHex(coords, HexType.Path);
@@ -85,6 +92,7 @@ public class Pathfinder : MonoBehaviour
         return new List<List<Vector2Int>>(generatedPaths);
     }
 
+    //finds random tile on outer edge of grid that's a minimum distance away from previous start points
     private Vector2Int FindRandomEdgeTile(int radius, List<Vector2Int> usedStartPoints)
     {
         List<Vector2Int> allCoords = new List<Vector2Int>();
