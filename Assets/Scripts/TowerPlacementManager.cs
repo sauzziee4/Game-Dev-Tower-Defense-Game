@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 
 public class TurretPlacementManager : MonoBehaviour
 {
@@ -16,7 +17,7 @@ public class TurretPlacementManager : MonoBehaviour
 
     [Header("UI References")]
     public UnityEngine.UI.Button placeTurretButton;
-    public UnityEngine.UI.Text resourceText;
+    public TextMeshProUGUI resourceText;
 
     private HexGrid hexGrid;
     private HexGridGenerator hexGridGenerator;
@@ -27,6 +28,8 @@ public class TurretPlacementManager : MonoBehaviour
     private GameObject currentPreview;
     private Vector2Int hoveredHexCoords;
     private GameObject hoveredHex;
+
+    private Material originalHexMaterial;
 
     // Resource management
     private float playerResources = 200f; // Starting resources
@@ -211,7 +214,7 @@ public class TurretPlacementManager : MonoBehaviour
             return false;
         }
 
-        // Check resources
+        
         if (playerResources < turretCost)
         {
             return false;
@@ -228,21 +231,21 @@ public class TurretPlacementManager : MonoBehaviour
             return;
         }
 
-        // Calculate world position
+        
         Vector3 worldPos = hexGridGenerator.HexToWorld(coords);
         worldPos.y += turretPlacementHeight;
 
-        // Instantiate turret
+        
         GameObject newTurret = Instantiate(turretPrefab, worldPos, Quaternion.identity);
 
-        // Track the placed turret
+        
         placedTurrets[coords] = newTurret;
 
-        // Deduct resources
+       
         playerResources -= turretCost;
         UpdateResourceDisplay();
 
-        // End placement mode
+        
         CancelTurretPlacement();
 
         Debug.Log($"Turret placed at {coords}. Remaining resources: {playerResources}");
@@ -255,8 +258,14 @@ public class TurretPlacementManager : MonoBehaviour
         Renderer renderer = hex.GetComponent<Renderer>();
         if (renderer != null)
         {
+            
+            if (originalHexMaterial == null)
+            {
+                originalHexMaterial = renderer.material;
+            }
+
             Material highlightMaterial = isValid ? validPlacementMaterial : invalidPlacementMaterial;
-            if (highlightMaterial != null)
+            if(highlightMaterial != null)
             {
                 renderer.material = highlightMaterial;
             }
@@ -274,21 +283,20 @@ public class TurretPlacementManager : MonoBehaviour
     }
     private void ResetHoveredHex()
     {
-        if (hoveredHex != null)
+        if (hoveredHex != null && originalHexMaterial != null)
         {
-            // Reset to original material
-            HexTile hexTile = hoveredHex.GetComponent<HexTile>();
-            if (hexTile != null && hexTile.variant != null && hexTile.variant.material != null)
+            
+            Renderer renderer = hoveredHex.GetComponent<Renderer>();
+            if (renderer != null)
             {
-                Renderer renderer = hoveredHex.GetComponent<Renderer>();
-                if (renderer != null)
-                {
-                    renderer.material = hexTile.variant.material;
-                }
+                renderer.material = originalHexMaterial;
             }
+
+            
+            originalHexMaterial = null;
             hoveredHex = null;
         }
-        hoveredHexCoords = new Vector2Int(int.MaxValue, int.MaxValue); // Invalid coords
+        hoveredHexCoords = new Vector2Int(int.MaxValue, int.MaxValue); 
     }
 
     private void UpdateResourceDisplay()
@@ -299,20 +307,20 @@ public class TurretPlacementManager : MonoBehaviour
         }
     }
 
-    // Public method to add resources (for when enemies are defeated, etc.)
+    
     public void AddResources(float amount)
     {
         playerResources += amount;
         UpdateResourceDisplay();
     }
 
-    // Public method to get turret at specific coordinates
+    
     public GameObject GetTurretAt(Vector2Int coords)
     {
         return placedTurrets.TryGetValue(coords, out GameObject turret) ? turret : null;
     }
 
-    // Public method to remove turret (for selling, etc.)
+    
     public bool RemoveTurret(Vector2Int coords)
     {
         if (placedTurrets.TryGetValue(coords, out GameObject turret))
@@ -327,7 +335,7 @@ public class TurretPlacementManager : MonoBehaviour
         return false;
     }
 
-    // Properties
+    
     public float PlayerResources => playerResources;
     public bool IsPlacingTurret => isPlacingTurret;
 }

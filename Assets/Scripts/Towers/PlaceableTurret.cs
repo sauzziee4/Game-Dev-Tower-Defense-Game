@@ -200,39 +200,49 @@ public class PlaceableTurret : MonoBehaviour
 
     private void CreateRangeIndicator()
     {
-        // Create a simple circle to show attack range
+        
         GameObject rangeObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         rangeObj.name = "RangeIndicator";
         rangeObj.transform.parent = transform;
         rangeObj.transform.localPosition = Vector3.zero;
 
-        // Scale to match attack range
+        
         float diameter = attackRange * 2f;
         rangeObj.transform.localScale = new Vector3(diameter, 0.01f, diameter);
 
-        // Remove collider and set up material
+        
         Destroy(rangeObj.GetComponent<Collider>());
 
         Renderer renderer = rangeObj.GetComponent<Renderer>();
         if (renderer != null)
         {
-            // Create a transparent material for the range indicator
-            Material rangeMat = new Material(Shader.Find("Standard"));
-            rangeMat.color = new Color(0, 1, 0, 0.3f); // Transparent green
-            rangeMat.SetFloat("_Mode", 2); // Set to Fade mode
-            rangeMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            rangeMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            rangeMat.SetInt("_ZWrite", 0);
-            rangeMat.DisableKeyword("_ALPHATEST_ON");
-            rangeMat.EnableKeyword("_ALPHABLEND_ON");
-            rangeMat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            rangeMat.renderQueue = 3000;
+            
+            Material rangeMat = new Material(Shader.Find("Unlit/Transparent"));
+
+            
+            if (rangeMat.shader.name == "Hidden/InternalErrorShader")
+            {
+                rangeMat = new Material(Shader.Find("Standard"));
+
+                
+                rangeMat.SetFloat("_Mode", 2); 
+                rangeMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                rangeMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                rangeMat.SetInt("_ZWrite", 0);
+                rangeMat.DisableKeyword("_ALPHATEST_ON");
+                rangeMat.EnableKeyword("_ALPHABLEND_ON");
+                rangeMat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                rangeMat.renderQueue = 3000;
+            }
+
+            rangeMat.color = new Color(0.3f, 0.6f, 1f, 0.1f);
 
             renderer.material = rangeMat;
         }
 
         rangeIndicator = rangeObj;
     }
+
 
     // Mouse interaction for showing range
     private void OnMouseEnter()
