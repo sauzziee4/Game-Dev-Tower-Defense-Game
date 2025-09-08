@@ -187,13 +187,20 @@ public class HexGridGenerator : MonoBehaviour
                 GameObject tile = hexGrid.GetTileAt(coords);
                 if (tile != null)
                 {
-                    // Get a random decoration prefab from the array.
-                    GameObject decorationPrefab = decorationPrefabs[UnityEngine.Random.Range(0, decorationPrefabs.Length)];
+                    HexTile hexTile = tile.GetComponent<HexTile>();
+                    if (hexTile != null && !hexTile.isOccupied)
+                    {
+                        // Get a random decoration prefab from the array.
+                        GameObject decorationPrefab = decorationPrefabs[UnityEngine.Random.Range(0, decorationPrefabs.Length)];
 
-                    // Instantiate the decoration with a slight height offset.
-                    Vector3 position = tile.transform.position;
-                    position.y += decorationHeightOffset;
-                    GameObject decoration = Instantiate(decorationPrefab, position, Quaternion.identity, tile.transform);
+                        // Instantiate the decoration with a slight height offset.
+                        Vector3 position = tile.transform.position;
+                        position.y += decorationHeightOffset;
+                        GameObject decoration = Instantiate(decorationPrefab, position, Quaternion.identity, tile.transform);
+
+                        hexTile.SetOccupied(decoration);
+                    }
+                    
                 }
             }
         }

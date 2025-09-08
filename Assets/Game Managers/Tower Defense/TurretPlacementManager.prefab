@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7020489039971413367
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 809732635680175007}
+  - component: {fileID: 5760010959264843948}
+  m_Layer: 0
+  m_Name: TurretPlacementManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &809732635680175007
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7020489039971413367}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.7929197, y: 1.655398, z: -0.74810445}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5760010959264843948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7020489039971413367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cb918b447b00424ebfeb812fedf55b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  turretPrefab: {fileID: 7297676029622449609, guid: 46bd00c2d1e918a46949f63add69ecce, type: 3}
+  turretCost: 50
+  turretPlacementHeight: 0.1
+  validPlacementMaterial: {fileID: 2100000, guid: 675bc6468fdbdbc428ede54892a57490, type: 2}
+  invalidPlacementMaterial: {fileID: 2100000, guid: 9fa52e5fb735cbd43890292667ddb8e9, type: 2}
+  placementPreviewPrefab: {fileID: 2110109564227069871, guid: 807fc53fa0f3ad544a8303cc8db7db14, type: 3}
+  placeTurretButton: {fileID: 0}
+  resourceText: {fileID: 0}

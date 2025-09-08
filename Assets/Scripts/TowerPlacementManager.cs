@@ -231,21 +231,27 @@ public class TurretPlacementManager : MonoBehaviour
             return;
         }
 
-        
+        // Get the tile and mark it as occupied before placing turret
+        GameObject tile = hexGrid.GetTileAt(coords);
+        HexTile hexTile = tile?.GetComponent<HexTile>();
+
         Vector3 worldPos = hexGridGenerator.HexToWorld(coords);
         worldPos.y += turretPlacementHeight;
 
-        
         GameObject newTurret = Instantiate(turretPrefab, worldPos, Quaternion.identity);
 
-        
+        // Track in both systems
         placedTurrets[coords] = newTurret;
 
-       
+        // Mark the hex tile as occupied
+        if (hexTile != null)
+        {
+            hexTile.SetOccupied(newTurret);
+        }
+
         playerResources -= turretCost;
         UpdateResourceDisplay();
 
-        
         CancelTurretPlacement();
 
         Debug.Log($"Turret placed at {coords}. Remaining resources: {playerResources}");
@@ -320,12 +326,21 @@ public class TurretPlacementManager : MonoBehaviour
         return placedTurrets.TryGetValue(coords, out GameObject turret) ? turret : null;
     }
 
-    
+
     public bool RemoveTurret(Vector2Int coords)
     {
         if (placedTurrets.TryGetValue(coords, out GameObject turret))
         {
             placedTurrets.Remove(coords);
+
+            // Clear the hex tile occupancy
+            GameObject tile = hexGrid.GetTileAt(coords);
+            HexTile hexTile = tile?.GetComponent<HexTile>();
+            if (hexTile != null)
+            {
+                hexTile.SetUnoccupied();
+            }
+
             if (turret != null)
             {
                 Destroy(turret);
@@ -335,7 +350,7 @@ public class TurretPlacementManager : MonoBehaviour
         return false;
     }
 
-    
+
     public float PlayerResources => playerResources;
     public bool IsPlacingTurret => isPlacingTurret;
 }

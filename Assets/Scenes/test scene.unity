@@ -413,6 +413,10 @@ MonoBehaviour:
   decorationPrefabs: []
   decorationChance: 0.3
   decorationHeightOffset: 0.02
+  spawnPointHeight: 0.5
+  towerPrefab: {fileID: 0}
+  navMeshSurface: {fileID: 0}
+  navMeshModifierVolumePrefab: {fileID: 0}
 --- !u!4 &372243083
 Transform:
   m_ObjectHideFlags: 0

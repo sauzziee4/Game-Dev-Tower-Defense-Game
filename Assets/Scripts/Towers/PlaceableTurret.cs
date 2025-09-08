@@ -11,10 +11,10 @@ public class PlaceableTurret : MonoBehaviour
     public float projectileSpeed = 15f;
 
     [Header("Visual Settings")]
-    public Transform turretHead; // The part that rotates to face enemies
+    public Transform turretHead; 
     public Transform projectileSpawnPoint;
     public GameObject projectilePrefab;
-    public GameObject rangeIndicator; // Optional visual range indicator
+    public GameObject rangeIndicator; 
 
     [Header("Upgrade Settings")]
     public int upgradeLevel = 1;
