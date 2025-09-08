@@ -9,9 +9,6 @@ public class Projectile : MonoBehaviour
     private float projectileSpeed;
 
     // Sets the target and stats for the projectile
-    //"target" is the enemy or defendable object to target
-    //"damage" is the damage the projectile will inflict
-    //"speed" is the speed of the projectile
     public void SetTarget(Enemy target, float damage, float speed)
     {
         this.targetEnemy = target;
@@ -20,9 +17,6 @@ public class Projectile : MonoBehaviour
     }
 
     // Sets the target and stats for the projectile.
-    //"target">The enemy or defendable object to target
-    //"damage">The damage the projectile will inflict
-    //"speed">The speed of the projectile
     public void SetTarget(IDefendable target, float damage, float speed)
     {
         this.targetDefendable = target;
@@ -34,11 +28,11 @@ public class Projectile : MonoBehaviour
     {
         if (targetEnemy != null)
         {
-            // Move towards the enemy position
+            // Move towards enemy position
             Vector3 direction = (targetEnemy.transform.position - transform.position).normalized;
             transform.position += direction * projectileSpeed * Time.deltaTime;
 
-            // Check if the projectile has hit the target
+            // Check if the projectile has hit target
             if (Vector3.Distance(transform.position, targetEnemy.transform.position) < 0.5f)
             {
                 targetEnemy.TakeDamage(projectileDamage);

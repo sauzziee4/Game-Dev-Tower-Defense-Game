@@ -39,15 +39,6 @@ public class Enemy : MonoBehaviour, IDefendable
     private HexGrid hexGrid;
     private Transform centralTowerTransform;
 
-    /* private List<Vector2Int> path;
-     private int currentPathIndex = 0;
-     private HexGridGenerator hexGridGenerator; */
-
-    // private HexGrid hexGrid;
-    /* private IDefendable centralTower;
-
-     private bool hasReachedTower;*/
-
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -148,6 +139,7 @@ public class Enemy : MonoBehaviour, IDefendable
             }
         }
     }
+
     private bool IsValidTarget(IDefendable target)
     {
         if (target == null) return false;
@@ -164,6 +156,7 @@ public class Enemy : MonoBehaviour, IDefendable
 
         return true;
     }
+
     private void FindBestTarget()
     {
         IDefendable closestDefender = null;
@@ -184,11 +177,13 @@ public class Enemy : MonoBehaviour, IDefendable
             }
         }
 
+        //make sure tower variable is not empty
         if (tower != null)
         {
             float distanceToTower = Vector3.Distance(transform.position, tower.transform.position);
             if (distanceToTower < minDistance)
             {
+                //if tower is closest defendable, it takes priority
                 closestDefender = tower;
             }
         }
@@ -218,8 +213,7 @@ public class Enemy : MonoBehaviour, IDefendable
         }
     }
 
-    //reduces the enemy's health and handles iits destruction
-    //"damage" is amount of health to be reduced by
+    //reduces the enemy's health and handles its destruction
     public void TakeDamage(float damage)
     {
         health -= damage;

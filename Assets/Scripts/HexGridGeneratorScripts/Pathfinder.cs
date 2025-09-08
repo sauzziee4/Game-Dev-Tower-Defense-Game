@@ -96,6 +96,7 @@ public class Pathfinder : MonoBehaviour
     private Vector2Int FindRandomEdgeTile(int radius, List<Vector2Int> usedStartPoints)
     {
         List<Vector2Int> allCoords = new List<Vector2Int>();
+        //generate every possible coord within grid radius
         for (int q = -radius; q <= radius; q++)
         {
             int r1 = Mathf.Max(-radius, -q - radius);
@@ -106,17 +107,21 @@ public class Pathfinder : MonoBehaviour
             }
         }
 
+        //filter list to only get tiles on the edge of the map
         List<Vector2Int> edgeTiles = allCoords.Where(coords => HexDistance(coords, Vector2Int.zero) == radius).ToList();
 
+        //if this path is the first, any adge tile is valid
         if (usedStartPoints.Count == 0 && edgeTiles.Count > 0)
         {
             return edgeTiles[UnityEngine.Random.Range(0, edgeTiles.Count)];
         }
 
+        //filter to find edge tiles that are good distance from points already in use
         List<Vector2Int> validEdgeTiles = edgeTiles.Where(edgeTile =>
             usedStartPoints.All(usedPoint => HexDistance(edgeTile, usedPoint) >= minPathDistance)
         ).ToList();
 
+        //pick random tile from valid, spaced out list
         if (validEdgeTiles.Count > 0)
         {
             return validEdgeTiles[UnityEngine.Random.Range(0, validEdgeTiles.Count)];
@@ -124,8 +129,10 @@ public class Pathfinder : MonoBehaviour
         return Vector2Int.zero;
     }
 
+    //calculate shortest path between two points using A*
     public List<Vector2Int> FindPath(Vector2Int startCoords, Vector2Int endCoords, int gridRadius)
     {
+        //openSet for nodes to visit, cameFrom to trace path back
         var openSet = new PriorityQueue<Vector2Int>();
         openSet.Enqueue(startCoords, 0);
 
@@ -133,6 +140,7 @@ public class Pathfinder : MonoBehaviour
         var gScore = new Dictionary<Vector2Int, float> { { startCoords, 0 } };
         var fScore = new Dictionary<Vector2Int, float> { { startCoords, HexDistance(startCoords, endCoords) } };
 
+        //while there are nodes to check
         while (openSet.Count > 0)
         {
             Vector2Int current = openSet.Dequeue();
@@ -142,10 +150,13 @@ public class Pathfinder : MonoBehaviour
                 return ReconstructPath(cameFrom, current);
             }
 
+            //check all neighbors of current node
             foreach (var neighbor in GetNeighbors(current, gridRadius))
             {
+                //calculate potential cost to move
                 float tentativeGScore = gScore.ContainsKey(current) ? gScore[current] + 1 : 1;
 
+                //if better path, record it
                 if (!gScore.ContainsKey(neighbor) || tentativeGScore < gScore[neighbor])
                 {
                     cameFrom[neighbor] = current;
@@ -161,6 +172,7 @@ public class Pathfinder : MonoBehaviour
         return null;
     }
 
+    //traces path backward from end node to start
     private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
     {
         List<Vector2Int> path = new List<Vector2Int> { current };
@@ -169,16 +181,20 @@ public class Pathfinder : MonoBehaviour
             current = cameFrom[current];
             path.Add(current);
         }
+        //path built in reverse, flip it to correct order
         path.Reverse();
         return path;
     }
 
+    //gets all valid, adjacent hex neighbors for given coord
     private List<Vector2Int> GetNeighbors(Vector2Int coords, int gridRadius)
     {
         List<Vector2Int> neighbors = new List<Vector2Int>();
+        //check in all 6 hex directions
         foreach (var direction in HexDirections)
         {
             Vector2Int neighbor = coords + direction;
+            //only add neighbor if it's inside grid boundaries
             if (HexDistance(neighbor, Vector2Int.zero) <= gridRadius)
             {
                 neighbors.Add(neighbor);
@@ -187,6 +203,7 @@ public class Pathfinder : MonoBehaviour
         return neighbors;
     }
 
+    //calculates distance between 2 hex coords using axial coord system formula
     private float HexDistance(Vector2Int a, Vector2Int b)
     {
         int dx = Mathf.Abs(a.x - b.x);
@@ -195,6 +212,7 @@ public class Pathfinder : MonoBehaviour
         return (dx + dy + dz) / 2;
     }
 
+    //priority queue implemntation for A*
     private class PriorityQueue<T> where T : IEquatable<T>
     {
         private List<(T item, float priority)> elements = new List<(T, float)>();
@@ -203,11 +221,13 @@ public class Pathfinder : MonoBehaviour
         public void Enqueue(T item, float priority)
         {
             elements.Add((item, priority));
+            //sorts list so cheapest is always at the start of list
             elements.Sort((a, b) => a.priority.CompareTo(b.priority));
         }
 
         public T Dequeue()
         {
+            //gets cheapest item from start of list
             T bestItem = elements[0].item;
             elements.RemoveAt(0);
             return bestItem;

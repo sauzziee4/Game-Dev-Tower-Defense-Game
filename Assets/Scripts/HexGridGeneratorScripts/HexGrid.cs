@@ -7,7 +7,6 @@ public class HexGrid : MonoBehaviour
     //main data structure for storing hex tiles
     private Dictionary<Vector2Int, GameObject> tileMap = new Dictionary<Vector2Int, GameObject>();
 
-    
     public void AddTile(Vector2Int coords, GameObject tile)
     {
         tileMap[coords] = tile;
@@ -32,7 +31,7 @@ public class HexGrid : MonoBehaviour
         }
     }
 
-    // returns a list of all tiles in the grid returns A list of all tile GameObjects
+    // returns a list of all tiles in the grid returns a list of all tile GameObjects
     public List<GameObject> GetAllTiles()
     {
         return tileMap.Values.ToList();
@@ -57,20 +56,23 @@ public class HexGrid : MonoBehaviour
             GameObject tile = kvp.Value;
             string tileName = tile.name;
 
+            //defines different hex types (grass, path and castle)
             switch (type)
             {
                 case HexType.Grass:
-                    
+
                     if (tileName.EndsWith("_Grass"))
                         tilesOfType.Add(kvp.Key);
                     break;
+
                 case HexType.Path:
-                    
+
                     if (tileName.EndsWith("_Path"))
                         tilesOfType.Add(kvp.Key);
                     break;
+
                 case HexType.Castle:
-                    
+
                     if (tileName.EndsWith("_Castle"))
                         tilesOfType.Add(kvp.Key);
                     break;
@@ -80,9 +82,11 @@ public class HexGrid : MonoBehaviour
         return tilesOfType;
     }
 
+    //retrieves new dictionary containing only tiles that match a specific hexType
     public Dictionary<Vector2Int, GameObject> GetTileMapOfType(HexType type)
     {
         Dictionary<Vector2Int, GameObject> tilesOfType = new Dictionary<Vector2Int, GameObject>();
+        //loop through every coord and gameObject pair in main tile map
         foreach (var kvp in tileMap)
         {
             GameObject tile = kvp.Value;

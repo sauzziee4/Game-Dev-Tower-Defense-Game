@@ -3,22 +3,24 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
-
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     [Header("Game State")]
     public bool isGameOver = false;
+
     public bool isPaused = false;
 
     [Header("Game Over Settings")]
     public float gameOverDelay = 2f; // Delay before showing game over screen
+
     public GameObject gameOverUI; // Assign your game over UI panel
     public GameObject gameplayUI; // Assign your main gameplay UI
 
     [Header("Events")]
     public UnityEvent OnGameOver;
+
     public UnityEvent OnGameWin;
     public UnityEvent OnGamePause;
     public UnityEvent OnGameResume;
@@ -56,7 +58,6 @@ public class GameManager : MonoBehaviour
             gameplayUI.SetActive(true);
     }
 
-    
     public void TriggerGameOver()
     {
         if (isGameOver) return; // Prevent multiple calls
@@ -71,10 +72,8 @@ public class GameManager : MonoBehaviour
         OnGameOver?.Invoke();
     }
 
-    
     private IEnumerator HandleGameOver()
     {
-        
         Time.timeScale = 0.5f;
         yield return new WaitForSeconds(gameOverDelay * 0.5f);
 
@@ -93,11 +92,8 @@ public class GameManager : MonoBehaviour
         {
             spawner.StopSpawning();
         }
-
-        
     }
 
-    
     public void TriggerGameWin()
     {
         if (isGameOver) return;
@@ -106,25 +102,20 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game Won!");
 
         OnGameWin?.Invoke();
-
-        
     }
 
-    
     public void RestartGame()
     {
         Time.timeScale = 1f; // Reset time scale
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    
     public void LoadMainMenu()
     {
-        Time.timeScale = 1f; 
-        SceneManager.LoadScene("MainMenu"); 
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
     }
 
-    
     public void QuitGame()
     {
 #if UNITY_EDITOR
@@ -134,7 +125,6 @@ public class GameManager : MonoBehaviour
 #endif
     }
 
-    
     public void PauseGame()
     {
         if (isGameOver) return;
@@ -144,7 +134,6 @@ public class GameManager : MonoBehaviour
         OnGamePause?.Invoke();
     }
 
-    
     public void ResumeGame()
     {
         if (isGameOver) return;
@@ -154,7 +143,6 @@ public class GameManager : MonoBehaviour
         OnGameResume?.Invoke();
     }
 
-    
     public bool ShouldEndGame()
     {
         return centralTower == null || centralTower.health <= 0;
@@ -162,7 +150,6 @@ public class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        
         Time.timeScale = 1f;
     }
 }

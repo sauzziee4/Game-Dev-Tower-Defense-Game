@@ -8,6 +8,7 @@ public class EnemySpawner : MonoBehaviour
 {
     [Header("Enemy Settings")]
     public GameObject enemyPrefab;
+
     public float spawnInterval = 3f; // Time in seconds between spawns
     public float spawnHeightOffset = 0.5f; // Height offset above tile surface
 
@@ -50,6 +51,7 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
+    //fetches path start point from HexGridGenerator
     private void InitializeSpawner()
     {
         if (enableDebugLogs)
@@ -62,13 +64,16 @@ public class EnemySpawner : MonoBehaviour
             if (enableDebugLogs)
                 Debug.Log($"EnemySpawner: Retrieved {spawnPointCoords?.Count ?? 0} spawn points");
 
+            //check if spawn coords were retreived correctly
             if (spawnPointCoords != null && spawnPointCoords.Count > 0)
             {
+                //if valid, allow spawning to commence
                 IsReadyToSpawn = true;
                 if (enableDebugLogs)
                 {
                     Debug.Log($"EnemySpawner: Spawn points: {string.Join(", ", spawnPointCoords)}");
                 }
+                //start continous spawning
                 StartSpawning();
             }
             else
@@ -104,9 +109,9 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    
     public void StartSpawning()
     {
+        //only proceed if not already spawning enemies
         if (!isSpawning && IsReadyToSpawn)
         {
             isSpawning = true;
@@ -116,7 +121,6 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    
     public void StopSpawning()
     {
         if (isSpawning)
@@ -134,7 +138,6 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    
     public void ResumeSpawning()
     {
         if (!isSpawning && IsReadyToSpawn)
@@ -145,7 +148,6 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    
     public bool IsSpawning()
     {
         return isSpawning;
@@ -171,7 +173,7 @@ public class EnemySpawner : MonoBehaviour
                 Debug.LogWarning($"EnemySpawner: Cannot spawn - Ready: {IsReadyToSpawn}, SpawnPoints: {spawnPointCoords.Count}, Prefab: {enemyPrefab != null}");
             }
 
-            // Wait for the specified interval before spawning next enemy
+            // Wait for specified interval before spawning next enemy
             yield return new WaitForSeconds(spawnInterval);
         }
 
@@ -229,6 +231,4 @@ public class EnemySpawner : MonoBehaviour
             Debug.LogError($"EnemySpawner: No tile found at spawn coordinate {randomCoord}");
         }
     }
-
-   
 }

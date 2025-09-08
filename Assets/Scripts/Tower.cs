@@ -71,7 +71,6 @@ public class Tower : MonoBehaviour, IDefendable
     }
 
     //fires a projectile at target enemy
-    //"targetEnemy" is the enemy to fire at
     private void Shoot(Enemy targetEnemy)
     {
         if (projectilePrefab == null || targetEnemy == null) return;
@@ -85,7 +84,6 @@ public class Tower : MonoBehaviour, IDefendable
         }
     }
 
-    
     public void TakeDamage(float damage)
     {
         health -= damage;
@@ -104,8 +102,6 @@ public class Tower : MonoBehaviour, IDefendable
             {
                 Debug.LogError("GameManager not found! Cannot trigger game over.");
             }
-
-           
         }
     }
 }

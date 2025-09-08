@@ -39,10 +39,10 @@ public class DefendableManager : MonoBehaviour
         }
     }
 
-    //returns IDefendable object closest to a given position
-    //returns closest IDefendable Object, or null if none exist
+    //returns IDefendable object closest to a given position, or null if none are found
     public IDefendable GetClosestDefendable(Vector3 position)
     {
+        //check if no defendables are found
         if (allDefendables.Count == 0)
         {
             return null;
@@ -51,6 +51,7 @@ public class DefendableManager : MonoBehaviour
         IDefendable closest = null;
         float minDistanceSqr = Mathf.Infinity;
 
+        //go through all defendables in list
         foreach (var defendable in allDefendables)
         {
             if (defendable is MonoBehaviour defendableBehaviour)
