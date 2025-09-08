@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-///a static class to manage all IDendable objects in scene for efficent lookup
+//a static class to manage all IDendable objects in scene for efficent lookup
 public class DefendableManager : MonoBehaviour
 {
     public static DefendableManager Instance { get; private set; }
@@ -22,7 +22,6 @@ public class DefendableManager : MonoBehaviour
     }
 
     //adds a new IDefenable object to manager's list
-    //"defendable" is the object to add
     public void AddDefendable(IDefendable defendable)
     {
         if (defendable != null && !allDefendables.Contains(defendable))
@@ -32,7 +31,6 @@ public class DefendableManager : MonoBehaviour
     }
 
     //removes IDefendable object from manager's list
-    //"defendable" is the object to remove
     public void RemoveDefendable(IDefendable defendable)
     {
         if (defendable != null)
@@ -42,8 +40,7 @@ public class DefendableManager : MonoBehaviour
     }
 
     //returns IDefendable object closest to a given position
-    //"position" the position to check from
-    // returns closest IDefendable Object, or null if none exist
+    //returns closest IDefendable Object, or null if none exist
     public IDefendable GetClosestDefendable(Vector3 position)
     {
         if (allDefendables.Count == 0)
