@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.UI;
+using UnityEngine.AI;
 
 // Handles spawning of enemies at a set interval
 public class EnemySpawner : MonoBehaviour
@@ -11,19 +11,11 @@ public class EnemySpawner : MonoBehaviour
 
     public float spawnInterval = 3f; // Time in seconds between spawns
 
-    /* [Header("Spawn Point Settings")]
-    public List<Transform> spawnPoints; */
-
     [Header("References")]
     [SerializeField] private HexGridGenerator hexGridGenerator;
 
-    [SerializeField] private Pathfinder pathfinder;
-
-    private List<Transform> spawnPoints = new List<Transform>();
+    private List<Vector2Int> spawnPointCoords = new List<Vector2Int>();
     private bool IsReadyToSpawn = false;
-
-    /*   private bool spawnPointsPopulated = false;
-       private bool spawningActivated = true; */
 
     private void OnEnable()
     {
@@ -41,49 +33,22 @@ public class EnemySpawner : MonoBehaviour
         {
             hexGridGenerator = FindFirstObjectByType<HexGridGenerator>();
         }
-        if (pathfinder == null)
-        {
-            pathfinder = FindFirstObjectByType<Pathfinder>();
-        }
     }
 
     private void InitializeSpawner()
     {
-        PopulateSpawnPoints();
-
-        if (IsReadyToSpawn)
+        if (hexGridGenerator != null)
         {
-            StartCoroutine(SpawnEnemies());
-        }
-        else
-        {
-            Debug.LogError("Enemy Spawner could not initialize because no spawn points were found!");
-        }
-    }
-
-    private void PopulateSpawnPoints()
-    {
-        if (hexGridGenerator == null) return;
-
-        List<GameObject> spawnPointObjects = hexGridGenerator.GetSpawnPoints();
-
-        if (spawnPointObjects != null && spawnPointObjects.Count > 0)
-        {
-            spawnPoints.Clear();
-            foreach (GameObject spawnPointObj in spawnPointObjects)
+            spawnPointCoords = hexGridGenerator.GetSpawnPointCoords();
+            if (spawnPointCoords != null && spawnPointCoords.Count > 0)
             {
-                if (spawnPointObj != null)
-                {
-                    spawnPoints.Add(spawnPointObj.transform);
-                }
+                IsReadyToSpawn = true;
+                StartCoroutine(SpawnEnemies());
             }
-            IsReadyToSpawn = true;
-            Debug.Log($"Successfully populated {spawnPoints.Count} spawn points");
-        }
-        else
-        {
-            Debug.LogWarning("HexGridGenerator returned no spawn points during population.");
-            IsReadyToSpawn = false;
+            else
+            {
+                Debug.LogError("Enemy Spawner could not initialize: No spawn points found!");
+            }
         }
     }
 
@@ -96,25 +61,24 @@ public class EnemySpawner : MonoBehaviour
             // Wait for the specified interval before spawning next enemy
             yield return new WaitForSeconds(spawnInterval);
 
-            if (spawnPoints.Count > 0)
+            if (IsReadyToSpawn && spawnPointCoords.Count > 0)
             {
-                // Select a random spawn point from the list
-                Transform randomSpawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
+                Vector2Int randomCoord = spawnPointCoords[Random.Range(0, spawnPointCoords.Count)];
+                GameObject spawnTile = hexGridGenerator.GetTileAt(randomCoord);
 
-                GameObject newEnemy = Instantiate(enemyPrefab, randomSpawnPoint.position, Quaternion.identity);
-
-                UnityEngine.AI.NavMeshAgent agent = newEnemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
-                if (agent != null && hexGridGenerator.GetTowerInstance() != null)
+                if (spawnTile != null)
                 {
-                    agent.SetDestination(hexGridGenerator.GetTowerInstance().transform.position);
+                    Vector3 spawnPos = spawnTile.transform.position;
+                    if (NavMesh.SamplePosition(spawnPos, out NavMeshHit hit, 2.0f, NavMesh.AllAreas))
+                    {
+                        Instantiate(enemyPrefab, hit.position, Quaternion.identity);
+                        // The enemy script itself handles setting the destination
+                    }
+                    else
+                    {
+                        Debug.LogError($"Could not find valid NavMesh position near tile at {randomCoord}");
+                    }
                 }
-                else
-                {
-                    Debug.LogWarning("Enemy prefab is missing NavMeshAgent or tower instance is not found.");
-                }
-                Vector2Int startCoords = hexGridGenerator.WorldToHex(randomSpawnPoint.position);
-                Vector2Int endCoords = Vector2Int.zero;
-                List<Vector2Int> path = pathfinder.FindPath(startCoords, endCoords, hexGridGenerator.gridRadius);
             }
         }
     }

@@ -2,22 +2,30 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-public class PlaceableTurret : MonoBehaviour
+public class PlaceableTurret : MonoBehaviour, IDefendable
 {
+    public float health { get; set; }
+    public Vector3 transform_position => transform.position;
+
     [Header("Turret Stats")]
+    public float maxHealth = 100f;
+
     public float attackRange = 5f;
+
     public float fireRate = 2f; // attacks per second
     public float damage = 15f;
     public float projectileSpeed = 15f;
 
     [Header("Visual Settings")]
-    public Transform turretHead; 
+    public Transform turretHead;
+
     public Transform projectileSpawnPoint;
     public GameObject projectilePrefab;
-    public GameObject rangeIndicator; 
+    public GameObject rangeIndicator;
 
     [Header("Upgrade Settings")]
     public int upgradeLevel = 1;
+
     public float upgradeCostMultiplier = 1.5f;
     public float upgradeStatMultiplier = 1.3f;
 
@@ -27,6 +35,27 @@ public class PlaceableTurret : MonoBehaviour
 
     // Range visualization
     private bool showingRange = false;
+
+    private void OnEnable()
+    {
+        if (DefendableManager.Instance != null)
+        {
+            DefendableManager.Instance.AddDefendable(this);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (DefendableManager.Instance != null)
+        {
+            DefendableManager.Instance.RemoveDefendable(this);
+        }
+    }
+
+    private void Awake()
+    {
+        health = maxHealth;
+    }
 
     private void Start()
     {
@@ -80,6 +109,26 @@ public class PlaceableTurret : MonoBehaviour
             {
                 Fire();
                 nextFireTime = Time.time + 1f / fireRate;
+            }
+        }
+    }
+
+    //allows turret to be damaged by enemies
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
+        if (health <= 0)
+        {
+            // Find the manager and tell it to remove this turret by its grid position
+            var placementManager = FindFirstObjectByType<TurretPlacementManager>();
+            if (placementManager != null)
+            {
+                placementManager.RemoveTurret(gridPosition);
+            }
+            else
+            {
+                // Fallback if manager isn't found, which also triggers OnDisable
+                Destroy(gameObject);
             }
         }
     }
@@ -161,6 +210,10 @@ public class PlaceableTurret : MonoBehaviour
             fireRate *= upgradeStatMultiplier;
             attackRange *= 1.1f; // Smaller range increase
 
+            //Increase max health and heal on upgrade
+            maxHealth *= upgradeStatMultiplier;
+            health = maxHealth;
+
             // Update visual scale to show upgrade
             transform.localScale *= 1.05f;
 
@@ -200,32 +253,26 @@ public class PlaceableTurret : MonoBehaviour
 
     private void CreateRangeIndicator()
     {
-        
         GameObject rangeObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         rangeObj.name = "RangeIndicator";
         rangeObj.transform.parent = transform;
         rangeObj.transform.localPosition = Vector3.zero;
 
-        
         float diameter = attackRange * 2f;
         rangeObj.transform.localScale = new Vector3(diameter, 0.01f, diameter);
 
-        
         Destroy(rangeObj.GetComponent<Collider>());
 
         Renderer renderer = rangeObj.GetComponent<Renderer>();
         if (renderer != null)
         {
-            
             Material rangeMat = new Material(Shader.Find("Unlit/Transparent"));
 
-            
             if (rangeMat.shader.name == "Hidden/InternalErrorShader")
             {
                 rangeMat = new Material(Shader.Find("Standard"));
 
-                
-                rangeMat.SetFloat("_Mode", 2); 
+                rangeMat.SetFloat("_Mode", 2);
                 rangeMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
                 rangeMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
                 rangeMat.SetInt("_ZWrite", 0);
@@ -243,7 +290,6 @@ public class PlaceableTurret : MonoBehaviour
         rangeIndicator = rangeObj;
     }
 
-
     // Mouse interaction for showing range
     private void OnMouseEnter()
     {
@@ -257,6 +303,7 @@ public class PlaceableTurret : MonoBehaviour
 
     // Public properties
     public Vector2Int GridPosition => gridPosition;
+
     public float AttackRange => attackRange;
     public int UpgradeLevel => upgradeLevel;
 }

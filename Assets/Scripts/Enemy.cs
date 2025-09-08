@@ -61,14 +61,22 @@ public class Enemy : MonoBehaviour, IDefendable
     {
         //add this enemy to static list when it's enabled
         allEnemies.Add(this);
-        DefendableManager.Instance?.AddDefendable(this); //enemies can now be targeted
+
+        if (DefendableManager.Instance != null)
+        {
+            DefendableManager.Instance?.AddDefendable(this); //enemies can now be targeted
+        }
     }
 
     private void OnDisable()
     {
         //Remove this enemy from static list when it is disabled or destroyed
         allEnemies.Remove(this);
-        DefendableManager.Instance?.RemoveDefendable(this);
+
+        if (DefendableManager.Instance != null)
+        {
+            DefendableManager.Instance?.RemoveDefendable(this);
+        }
     }
 
     private void Start()
@@ -80,6 +88,15 @@ public class Enemy : MonoBehaviour, IDefendable
             //set main tower as default primary target
             centralTowerTransform = towerObject.transform;
             currentTarget = towerObject.GetComponent<IDefendable>();
+
+            if (agent != null && currentTarget != null)
+            {
+                agent.SetDestination(currentTarget.transform_position);
+            }
+        }
+        else
+        {
+            Debug.LogError("Could not find the central tower instance!");
         }
         //check for closer targets periodically
         InvokeRepeating(nameof(FindBestTarget), 0f, targetCheckInterval);
@@ -87,11 +104,16 @@ public class Enemy : MonoBehaviour, IDefendable
 
     private void Update()
     {
+        if (agent == null || Time.timeScale == 0) return;
+
         if (currentTarget == null || (currentTarget as MonoBehaviour)?.gameObject == null)
         {
             //if target destroyed, find new one
             FindBestTarget();
-            if (currentTarget == null) return;
+            if (currentTarget == null)
+            {
+                agent.isStopped = true;
+            }
         }
 
         //check if inrange to attack current target
@@ -118,64 +140,43 @@ public class Enemy : MonoBehaviour, IDefendable
 
     private void FindBestTarget()
     {
-        IDefendable closestDefender = DefendableManager.Instance.GetClosestDefendable(transform.position);
+        IDefendable closestDefender = null;
+        float minDistance = Mathf.Infinity;
 
-        //find closest defendable within aggrorange
-        if (closestDefender != null && Vector3.Distance(transform.position, closestDefender.transform_position) <= aggroRange)
+        //find all turrets and tower
+        var turrets = FindObjectsByType<PlaceableTurret>(FindObjectsSortMode.None);
+        var tower = FindFirstObjectByType<Tower>();
+
+        //check distance to turrets
+        foreach (var turret in turrets)
         {
-            currentTarget = closestDefender;
-        }
-        else
-        {
-            //if no defender nearby, default to main tower
-            currentTarget = centralTowerTransform.GetComponent<IDefendable>();
-        }
-    }
-
-    /*
-    public void SetPath(List<Vector2Int> newPath)
-    {
-        path = newPath;
-        currentPathIndex = 0;
-    }
-
-    private void FollowPath()
-    {
-        if (path == null || path.Count == 0 || hexGridGenerator == null) return;
-
-        // Check if we have reached the current point in the path.
-        Vector3 currentTarget = hexGridGenerator.HexToWorld(path[currentPathIndex]);
-        float distanceToTarget = Vector3.Distance(transform.position, currentTarget);
-        if (distanceToTarget < 0.2f)
-        {
-            currentPathIndex++;
-            if (currentPathIndex >= path.Count)
+            float distance = Vector3.Distance(transform.position, turret.transform.position);
+            if (distance < minDistance && distance <= aggroRange)
             {
-                hasReachedTower = true;
-                return;
+                minDistance = distance;
+                closestDefender = turret.GetComponent<IDefendable>();
             }
         }
 
-        // Move towards the next point on the path
-        if (currentPathIndex < path.Count)
+        if (tower != null)
         {
-            Vector3 nextWaypoint = hexGridGenerator.HexToWorld(path[currentPathIndex]);
-            Vector3 direction = (nextWaypoint - transform.position).normalized;
-            transform.position += direction * speed * Time.deltaTime;
+            float distanceToTower = Vector3.Distance(transform.position, tower.transform.position);
+            if (distanceToTower < minDistance)
+            {
+                closestDefender = tower;
+            }
         }
-    }
 
-    //finds closest defender or the tower to attack
-    private void FindTarget()
-    {
-        //find all objects in scene that defends
-        IDefendable closestTarget = DefendableManager.Instance.GetClosestDefendable(transform.position);
-        if (closestTarget != null)
+        //if defender found in range, target, otherwise deafult to central tower
+        if (closestDefender != null)
         {
-            target = (closestTarget as MonoBehaviour).transform;
+            currentTarget = closestDefender;
+        }
+        else if (centralTowerTransform != null)
+        {
+            currentTarget = centralTowerTransform.GetComponent<IDefendable>();
         }
     }
-    */
 
     //inflicts damage on current target
     private void AttackTarget()
