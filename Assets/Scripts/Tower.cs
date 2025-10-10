@@ -6,7 +6,7 @@ using System.Linq;
 public class Tower : MonoBehaviour, IDefendable
 {
     //IDefendable implementation
-    public float health { get; set; } = 100f;
+    public float health { get; set; }
 
     public float maxHealth = 100f;
 
@@ -14,16 +14,20 @@ public class Tower : MonoBehaviour, IDefendable
     { get { return transform.position; } }
 
     [Header("Defense System")]
-    public float attackRange = 3f;
+    public float attackRange = 8f;
 
-    public float fireRate = 0.0001f; //attacks per second
+    public float fireRate = 1f; //attacks per second
     private float nextFireTime = 0f;
     public GameObject projectilePrefab;
     public Transform projectileSpawnPoint;
-    public float projectileSpeed = 0.0003f;
-    public float projectileDamage = 10f;
+    public float projectileSpeed = 10f;
+    public float projectileDamage = 15f;
 
     //adds and removes tower from defendableManager
+    private void Awake()
+    {
+        health = maxHealth;
+    }
     private void OnEnable()
     {
         if (DefendableManager.Instance != null)

@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 221431279194121345}
   - component: {fileID: 3163656429165392214}
   - component: {fileID: 2682165751568006400}
-  - component: {fileID: 4979598136255139307}
   m_Layer: 0
   m_Name: player_defense_tower_PREVIEW
   m_TagString: Untagged
@@ -110,28 +109,3 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -6587274030877202814, guid: c0d79086466dc214eb7f6d824a74953f, type: 3}
---- !u!114 &4979598136255139307
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2110109564227069871}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c6fa6979278b0c84c8a80d6b27ff2c61, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 100
-  attackRange: 5
-  fireRate: 2
-  damage: 15
-  projectileSpeed: 15
-  turretHead: {fileID: 0}
-  projectileSpawnPoint: {fileID: 0}
-  projectilePrefab: {fileID: 0}
-  rangeIndicator: {fileID: 0}
-  healthBarPrefab: {fileID: 0}
-  upgradeLevel: 1
-  upgradeCostMultiplier: 1.5
-  upgradeStatMultiplier: 1.3

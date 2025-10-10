@@ -11,6 +11,7 @@ public class TurretPlacementUI : MonoBehaviour
     public GameObject turretInfoPanel;
 
     [Header("Defender Selection")]
+    public GameObject defenderSelectionPanel; // Panel containing defender type buttons
     public Transform defenderButtonContainer; // Container for defender type buttons
     public GameObject defenderButtonPrefab; // Prefab for defender selection buttons
 
@@ -25,6 +26,7 @@ public class TurretPlacementUI : MonoBehaviour
     private TurretPlacementManager placementManager;
     private PlaceableTurret selectedTurret;
     private Button[] defenderButtons; // Array to track defender selection buttons
+    private bool defenderSelectionVisible = false;
 
     private void Start()
     {
@@ -35,6 +37,10 @@ public class TurretPlacementUI : MonoBehaviour
             turretInfoPanel.gameObject.SetActive(false);
         }
 
+        if(defenderSelectionPanel != null)
+        {
+            defenderSelectionPanel.SetActive(false);
+        }
         // Setup button listeners
         if (upgradeTurretButton != null)
         {
@@ -46,11 +52,64 @@ public class TurretPlacementUI : MonoBehaviour
             sellTurretButton.onClick.AddListener(SellSelectedTurret);
         }
 
+        if(placeTurretButton != null)
+        {   
+            placeTurretButton.onClick.RemoveAllListeners();
+            placeTurretButton.onClick.AddListener(OnPlaceTurretButtonClicked);
+        }
         CreateDefenderButtons();
 
     }
 
+
+    private void OnPlaceTurretButtonClicked()
+    {
+        if (placementManager.IsPlacingTurret)
+        {
+            placementManager.ToggleTurretPlacement();
+            HideDefenderSelection();
+        }
+        else
+        {
+            ShowDefenderSelection();
+        }
+    }
+
+    private void ShowDefenderSelection()
+    {
+        if (defenderSelectionPanel != null)
+        {
+            defenderSelectionPanel.SetActive(true);
+            defenderSelectionVisible = true;
+        }
+
+        if (placementManager != null)
+        {
+            var buttonText = placeTurretButton.GetComponentInChildren<Text>();
+            if (buttonText != null)
+            {
+                buttonText.text = "Cancel";
+            }
+        }
+    }
     
+    private void HideDefenderSelection()
+    {
+        if (defenderSelectionPanel != null)
+        {
+            defenderSelectionPanel.SetActive(false);
+            defenderSelectionVisible = false;
+        }
+
+        if (placementManager != null)
+        {
+            var buttonText = placeTurretButton.GetComponentInChildren<Text>();
+            if (buttonText != null)
+            {
+                buttonText.text = "Place Turret";
+            }
+        }
+    }
     private void CreateDefenderButtons()
     {
         if (placementManager == null || defenderButtonContainer == null || defenderButtonPrefab == null)
@@ -63,27 +122,39 @@ public class TurretPlacementUI : MonoBehaviour
         {
             GameObject buttonObj = Instantiate(defenderButtonPrefab, defenderButtonContainer);
             Button button = buttonObj.GetComponent<Button>();
-            
+
             // Set button text
             Text buttonText = buttonObj.GetComponentInChildren<Text>();
             if (buttonText != null)
             {
                 buttonText.text = $"{defenderTypes[i].name}\n${defenderTypes[i].cost}";
+                buttonText.fontSize = 14;
+                buttonText.alignment = TextAnchor.MiddleCenter;
             }
 
             // Add click listener
             int index = i; // Capture for closure
             button.onClick.AddListener(() => placementManager.SelectDefenderType(index));
-            
+
             defenderButtons[i] = button;
         }
     }
 
+    private void OnDefenderSelected(int index)
+    {
+        placementManager.SelectDefenderType(index);
+        placementManager.ToggleTurretPlacement();
+        HideDefenderSelection();
+    }
     private void Update()
     {
         UpdateInstructionText();
         UpdateResourceText();
-        UpdateDefenderButtons(); 
+        
+        if(defenderSelectionVisible)
+        {
+            UpdateDefenderButtons();
+        }
 
         // Handle right-click input for turret selection/deselection
         if (Input.GetMouseButtonDown(1) && !placementManager.IsPlacingTurret)
@@ -111,17 +182,26 @@ public class TurretPlacementUI : MonoBehaviour
                 ColorBlock colors = defenderButtons[i].colors;
                 if (i == placementManager.SelectedDefenderIndex)
                 {
-                    colors.normalColor = Color.yellow;
+                    colors.normalColor = new Color(1f,1f,0.5f,1f);
+                    colors.highlightedColor = new Color(1f,1f,0.3f,1f);
                 }
                 else
                 {
                     colors.normalColor = Color.white;
+                    colors.highlightedColor = new Color(0.9f,0.9f,0.9f,1f);
                 }
                 defenderButtons[i].colors = colors;
 
                 // Disable button if not enough resources
                 var defenderType = placementManager.DefenderTypes[i];
-                defenderButtons[i].interactable = placementManager.PlayerResources >= defenderType.cost;
+                bool canAfford = placementManager.PlayerResources >= defenderType.cost;
+                defenderButtons[i].interactable = canAfford;
+
+                Text buttonText = defenderButtons[i].GetComponentInChildren<Text>();
+                if (buttonText != null)
+                {
+                    buttonText.color = canAfford ? Color.black : Color.red;
+                }
             }
         }
     }
@@ -131,10 +211,15 @@ public class TurretPlacementUI : MonoBehaviour
     {
         if (instructionText == null) return;
 
-        if (placementManager.IsPlacingTurret)
+        if(defenderSelectionVisible)
+        {
+            instructionText.text = "Choose a defender type\nor Esc to cancel";
+            instructionText.color = Color.white;
+        }
+        else if (placementManager.IsPlacingTurret)
         {
             var selectedDefender = placementManager.DefenderTypes[placementManager.SelectedDefenderIndex];
-            instructionText.text = $"Placing: {selectedDefender.name}\nLeft Click to place\nRight click to cancel\nPress 1-9 to switch types";
+            instructionText.text = $"Placing: {selectedDefender.name}\nCost: {selectedDefender.cost}\nLeft Click to place\nRight Click or Esc to cancel";
             instructionText.color = Color.yellow;
         }
         else if (selectedTurret != null)
@@ -144,7 +229,7 @@ public class TurretPlacementUI : MonoBehaviour
         }
         else
         {
-            instructionText.text = "Select defender type, then click 'Place Turret'\nRight click turrets to select\nPress 1-9 to switch types";
+            instructionText.text = "Click 'Place Turret'\nPress 1-9 to switch types\nLeft Click to place a turret";
             instructionText.color = Color.white;
         }
     }
