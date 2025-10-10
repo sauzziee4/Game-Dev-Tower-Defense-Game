@@ -121,7 +121,6 @@ GameObject:
   - component: {fileID: 1247455308766773957}
   - component: {fileID: 1597323925935955387}
   - component: {fileID: 2543036220735012222}
-  - component: {fileID: 3956983891703717256}
   m_Layer: 0
   m_Name: player_defense_tower
   m_TagString: Untagged
@@ -242,28 +241,10 @@ MonoBehaviour:
   projectileSpawnPoint: {fileID: 6996309922845323882}
   projectilePrefab: {fileID: 9160392454859803428, guid: 87db693cf60ecd84d9d1c00a13cc6965, type: 3}
   rangeIndicator: {fileID: 0}
+  healthBarPrefab: {fileID: 0}
   upgradeLevel: 1
   upgradeCostMultiplier: 1.5
   upgradeStatMultiplier: 1.3
---- !u!114 &3956983891703717256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7297676029622449609}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e5a5f1ce020ab54ea869630e93d039f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 100
-  attackRange: 20
-  fireRate: 1
-  projectilePrefab: {fileID: 0}
-  projectileSpawnPoint: {fileID: 0}
-  projectileSpeed: 10
-  projectileDamage: 10
 --- !u!1 &8525052120379444222
 GameObject:
   m_ObjectHideFlags: 0

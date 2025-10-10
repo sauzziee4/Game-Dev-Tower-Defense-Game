@@ -122,6 +122,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6fa6979278b0c84c8a80d6b27ff2c61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 100
   attackRange: 5
   fireRate: 2
   damage: 15
@@ -130,6 +131,7 @@ MonoBehaviour:
   projectileSpawnPoint: {fileID: 0}
   projectilePrefab: {fileID: 0}
   rangeIndicator: {fileID: 0}
+  healthBarPrefab: {fileID: 0}
   upgradeLevel: 1
   upgradeCostMultiplier: 1.5
   upgradeStatMultiplier: 1.3

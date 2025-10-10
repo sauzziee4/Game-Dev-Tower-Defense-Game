@@ -3,12 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 
+
 public class TurretPlacementManager : MonoBehaviour
 {
+    [System.Serializable]
+public class DefenderType
+{
+    public string name;
+    public GameObject prefab;
+    public GameObject previewPrefab;
+    public float cost;
+    public Sprite icon;
+}
+    [Header("Defender Types")]
+    public DefenderType[] defenderTypes;
+
+
     [Header("Turret Settings")]
     public GameObject turretPrefab;
-
     public float turretCost = 50f;
+
+
     public float turretPlacementHeight = 0.1f;
 
     [Header("Visual Feedback")]
@@ -28,6 +43,7 @@ public class TurretPlacementManager : MonoBehaviour
 
     // Placement state
     private bool isPlacingTurret = false;
+    private int selectedDefenderIndex = 0;
 
     private GameObject currentPreview;
     private Vector2Int hoveredHexCoords;
@@ -46,6 +62,10 @@ public class TurretPlacementManager : MonoBehaviour
         hexGrid = Object.FindFirstObjectByType<HexGrid>();
         hexGridGenerator = Object.FindFirstObjectByType<HexGridGenerator>();
         playerCamera = Camera.main;
+        if(defenderTypes == null || defenderTypes.Length == 0)
+        {
+            InitializeLegacyDefenderTypes();
+        }
 
         //set up UI button event
         if (placeTurretButton != null)
@@ -57,6 +77,18 @@ public class TurretPlacementManager : MonoBehaviour
         UpdateResourceDisplay();
     }
 
+    private void InitializeLegacyDefenderTypes()
+    {
+        defenderTypes = new DefenderType[1];
+        defenderTypes[0] = new DefenderType
+        {
+            name = "Basic Turret",
+            prefab = turretPrefab,
+            previewPrefab = placementPreviewPrefab,
+            cost = turretCost,
+            icon = null
+        };
+    }
     private void Update()
     {
         if (isPlacingTurret)
@@ -68,6 +100,16 @@ public class TurretPlacementManager : MonoBehaviour
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
         {
             CancelTurretPlacement();
+        }
+
+        for(int i = 0; i <defenderTypes.Length && i < 9; i++)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+            {
+                selectedDefenderIndex = i;
+                UpdatePlacementPreview();
+                Debug.Log($"Selected defender: {defenderTypes[selectedDefenderIndex].name}");
+            }
         }
     }
 
@@ -85,9 +127,11 @@ public class TurretPlacementManager : MonoBehaviour
 
     private void StartTurretPlacement()
     {
-        if (playerResources < turretCost)
+        DefenderType selectedType = defenderTypes[selectedDefenderIndex];
+
+        if (playerResources < selectedType.cost)
         {
-            Debug.Log("Not enough resources to place turret!");
+            Debug.Log($"Not enough resources to place {selectedType.name} Cost: {selectedType.cost!}, Available: {playerResources}");
             return;
         }
 
@@ -104,11 +148,7 @@ public class TurretPlacementManager : MonoBehaviour
         }
 
         // Create preview if prefab is assigned
-        if (placementPreviewPrefab != null)
-        {
-            currentPreview = Instantiate(placementPreviewPrefab);
-            currentPreview.SetActive(false);
-        }
+        UpdatePlacementPreview();
     }
 
     private void CancelTurretPlacement()
@@ -220,7 +260,8 @@ public class TurretPlacementManager : MonoBehaviour
             return false;
         }
 
-        if (playerResources < turretCost)
+        DefenderType selectedType = defenderTypes[selectedDefenderIndex];
+        if (playerResources < selectedType.cost)
         {
             return false;
         }
@@ -235,6 +276,8 @@ public class TurretPlacementManager : MonoBehaviour
             Debug.Log("Cannot place turret at this location!");
             return;
         }
+
+        DefenderType selectedType = defenderTypes[selectedDefenderIndex];
 
         // Get the tile and mark it as occupied before placing turret
         GameObject tile = hexGrid.GetTileAt(coords);
@@ -313,7 +356,8 @@ public class TurretPlacementManager : MonoBehaviour
     {
         if (resourceText != null)
         {
-            resourceText.text = $"Resources: {playerResources:F0}";
+            DefenderType selectedType = defenderTypes[selectedDefenderIndex];
+            resourceText.text = $"Resources: {playerResources:F0} | {selectedType.name} Cost: {selectedType.cost}";
         }
     }
 
@@ -351,6 +395,36 @@ public class TurretPlacementManager : MonoBehaviour
         return false;
     }
 
+    public void SelectDefenderType(int index)
+    {
+        if (index >= 0 && index < defenderTypes.Length)
+        {
+            selectedDefenderIndex = index;
+            UpdatePlacementPreview();
+            Debug.Log($"Selected defender: {defenderTypes[selectedDefenderIndex].name}");
+        }
+    }
+
+    private void UpdatePlacementPreview()
+    {
+        if (currentPreview != null)
+        {
+            Destroy(currentPreview);
+            currentPreview = null;
+        }
+
+        if (isPlacingTurret)
+        {
+            DefenderType selectedType = defenderTypes[selectedDefenderIndex];
+            if(selectedType.previewPrefab != null)
+            {
+                currentPreview = Instantiate(selectedType.previewPrefab);
+                currentPreview.SetActive(false);
+            }
+        }
+    }
     public float PlayerResources => playerResources;
     public bool IsPlacingTurret => isPlacingTurret;
+    public DefenderType[] DefenderTypes => defenderTypes;
+    public int SelectedDefenderIndex => selectedDefenderIndex;
 }
