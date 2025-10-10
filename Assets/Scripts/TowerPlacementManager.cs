@@ -286,7 +286,7 @@ public class DefenderType
         Vector3 worldPos = hexGridGenerator.HexToWorld(coords);
         worldPos.y += turretPlacementHeight;
 
-        GameObject newTurret = Instantiate(turretPrefab, worldPos, Quaternion.identity);
+        GameObject newTurret = Instantiate(selectedType.prefab, worldPos, Quaternion.identity);
 
         // Track in both systems
         placedTurrets[coords] = newTurret;
@@ -297,12 +297,12 @@ public class DefenderType
             hexTile.SetOccupied(newTurret);
         }
 
-        playerResources -= turretCost;
+        playerResources -= selectedType.cost;
         UpdateResourceDisplay();
 
         CancelTurretPlacement();
 
-        Debug.Log($"Turret placed at {coords}. Remaining resources: {playerResources}");
+        Debug.Log($"{selectedType.name} placed at {coords}. Remaining resources: {playerResources}");
     }
 
     private void HighlightHex(GameObject hex, bool isValid)

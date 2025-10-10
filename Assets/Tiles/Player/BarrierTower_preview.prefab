@@ -97,7 +97,6 @@ GameObject:
   - component: {fileID: 1348366150148147096}
   - component: {fileID: 6879950591379094364}
   - component: {fileID: 6857706546396854975}
-  - component: {fileID: 2583077473461934394}
   m_Layer: 0
   m_Name: BarrierTower_preview
   m_TagString: Untagged
@@ -174,26 +173,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &2583077473461934394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7756698838081419224}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a104a81e11a70948b15217bd916fbc2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 200
-  repairRate: 2
-  maxRepairHealth: 150
-  slowRadius: 3
-  slowEffect: 0.5
-  damageRadius: 1.5
-  damagePerSecond: 10
-  slowAreaIndicator: {fileID: 0}
-  damageAreaIndicator: {fileID: 0}
-  repairEffect: {fileID: 0}
-  damagedMaterial: {fileID: 0}

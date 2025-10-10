@@ -1322,12 +1322,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  attackRange: 0.1
-  fireRate: 1
+  attackRange: 0.01
+  fireRate: 0.0001
   projectilePrefab: {fileID: 3952875021996697119, guid: 8cb924f2e1d887b4bb9b550df1268f21, type: 3}
   projectileSpawnPoint: {fileID: 1884960403}
-  projectileSpeed: 10
-  projectileDamage: 10
+  projectileSpeed: 2
+  projectileDamage: 2
 --- !u!4 &1282699702
 Transform:
   m_ObjectHideFlags: 0
@@ -1581,6 +1581,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1528646553}
   m_CullTransparentMesh: 1
+--- !u!1 &1563264505 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7756698838081419224, guid: c3b0d5d0ca18cca488e65092765d7865, type: 3}
+  m_PrefabInstance: {fileID: 2726311525727551897}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1565322178 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 341982002428083297, guid: cc5f5c88459958049a2bca515a3a6202, type: 3}
@@ -3405,6 +3410,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cc5f5c88459958049a2bca515a3a6202, type: 3}
+--- !u!1 &3967922843619066559 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7792922605552114356, guid: f57a5a8558610f746b67ddb1e7dd04e4, type: 3}
+  m_PrefabInstance: {fileID: 4603158951474842569}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4089510995574591164
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4855,14 +4865,14 @@ MonoBehaviour:
     previewPrefab: {fileID: 7756698838081419224, guid: c3b0d5d0ca18cca488e65092765d7865, type: 3}
     cost: 100
     icon: {fileID: 0}
-  turretPrefab: {fileID: 0}
+  turretPrefab: {fileID: 3967922843619066559}
   turretCost: 50
   turretPlacementHeight: 0.1
-  validPlacementMaterial: {fileID: 0}
-  invalidPlacementMaterial: {fileID: 0}
-  placementPreviewPrefab: {fileID: 0}
-  placeTurretButton: {fileID: 0}
-  resourceText: {fileID: 0}
+  validPlacementMaterial: {fileID: 2100000, guid: 9fa52e5fb735cbd43890292667ddb8e9, type: 2}
+  invalidPlacementMaterial: {fileID: 2100000, guid: 675bc6468fdbdbc428ede54892a57490, type: 2}
+  placementPreviewPrefab: {fileID: 1563264505}
+  placeTurretButton: {fileID: 8712342458773912339}
+  resourceText: {fileID: 721086263547148952}
 --- !u!1001 &8175880176437544731
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -14,13 +14,13 @@ public class Tower : MonoBehaviour, IDefendable
     { get { return transform.position; } }
 
     [Header("Defense System")]
-    public float attackRange = 20f;
+    public float attackRange = 3f;
 
-    public float fireRate = 1f; //attacks per second
+    public float fireRate = 0.0001f; //attacks per second
     private float nextFireTime = 0f;
     public GameObject projectilePrefab;
     public Transform projectileSpawnPoint;
-    public float projectileSpeed = 10f;
+    public float projectileSpeed = 0.0003f;
     public float projectileDamage = 10f;
 
     //adds and removes tower from defendableManager
