@@ -1319,8 +1319,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   attackRange: 3
-  fireRate: 0.2
-  projectilePrefab: {fileID: 7673134771546271459, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
+  fireRate: 2
+  projectilePrefab: {fileID: 3722865764368831054, guid: 4558bb6004690994f856875b3baab762, type: 3}
   projectileSpawnPoint: {fileID: 1884960403}
   projectileSpeed: 10
   projectileDamage: 5
@@ -3633,67 +3633,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 735d4d76fd8adef42a76b5fc16428178, type: 3}
---- !u!1001 &4471872982400216359
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 7673134771546271459, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_Name
-      value: Bullet
-      objectReference: {fileID: 0}
-    - target: {fileID: 7673134771546271459, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8627763655408794128, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8627763655408794128, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 2.089
-      objectReference: {fileID: 0}
-    - target: {fileID: 8627763655408794128, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8627763655408794128, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8627763655408794128, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8627763655408794128, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8627763655408794128, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8627763655408794128, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8627763655408794128, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8627763655408794128, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
 --- !u!1001 &4603158951474842569
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4108,6 +4047,10 @@ PrefabInstance:
     - target: {fileID: 5129727115049618317, guid: 3cf0730bc1d4879498efc6749bf21bc4, type: 3}
       propertyPath: m_Name
       value: player_defense_tower_BulletTest
+      objectReference: {fileID: 0}
+    - target: {fileID: 5129727115049618317, guid: 3cf0730bc1d4879498efc6749bf21bc4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7867387815955983673, guid: 3cf0730bc1d4879498efc6749bf21bc4, type: 3}
       propertyPath: m_LocalPosition.x
@@ -5539,4 +5482,3 @@ SceneRoots:
   - {fileID: 2726311525727551897}
   - {fileID: 8953271474581114315}
   - {fileID: 6075384358447754767}
-  - {fileID: 4471872982400216359}
