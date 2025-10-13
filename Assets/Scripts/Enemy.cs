@@ -3,6 +3,12 @@ using UnityEngine.AI;
 using System.Collections.Generic;
 using System.Linq;
 
+public enum EnemyType
+{
+    Easy,
+    Medium,
+    Hard
+}
 //represents an enemy unit that moves along path and attacks the tower
 //this is a placeholder and needs to be intergrated with pathfinding logic
 public class Enemy : MonoBehaviour, IDefendable
@@ -16,6 +22,7 @@ public class Enemy : MonoBehaviour, IDefendable
     public static List<Enemy> allEnemies = new List<Enemy>();
 
     [Header("Enemy Stats")]
+    public EnemyType enemyType;
     public float maxHealth = 20f;
 
     public float speed = 5f;
@@ -27,7 +34,7 @@ public class Enemy : MonoBehaviour, IDefendable
     [Header("Targeting")]
     public float aggroRange = 10f; //how close defender must be to become a target
 
-    private float targetCheckInterval = 0.5f; //how often to chheck for new targets
+    private float targetCheckInterval = 0.5f; //how often to check for new targets
 
     [Header("Resource Reward")]
     public float resourceReward = 10f;
@@ -47,6 +54,37 @@ public class Enemy : MonoBehaviour, IDefendable
             Debug.Log("enemy prefab missing navMeshAgent", this);
         }
         health = maxHealth;
+    }
+
+    private void ConfigureEnemyStats()
+    {
+        switch (enemyType)
+        {
+            case EnemyType.Easy:
+                maxHealth = 15f;
+                attackDamage = 3f;
+                speed = 7f;
+               // add resourceReward = 5f; ??
+                break;
+
+            case EnemyType.Medium:
+                //keep default values
+                break;
+
+            case EnemyType.Hard:
+                maxHealth = 30f;
+                attackDamage = 8f;
+                speed = 3.5f;
+                break;
+        }
+
+        //set initial health and update NavMeshAgent speed
+        health = maxHealth;
+        if (agent != null)
+        {
+            agent.speed = speed;
+        }
+        Debug.Log($"Configured stats for {enemyType}: health={health}, speed={speed}, attackDamage={attackDamage}");
     }
 
     private void OnEnable()
@@ -73,6 +111,7 @@ public class Enemy : MonoBehaviour, IDefendable
 
     private void Start()
     {
+        ConfigureEnemyStats();
         HexGridGenerator hexGridGenerator = FindFirstObjectByType<HexGridGenerator>();
         hexGrid = FindFirstObjectByType<HexGrid>();
         GameObject towerObject = hexGridGenerator?.GetTowerInstance();
@@ -225,4 +264,4 @@ public class Enemy : MonoBehaviour, IDefendable
             Destroy(gameObject);
         }
     }
-}
+} 

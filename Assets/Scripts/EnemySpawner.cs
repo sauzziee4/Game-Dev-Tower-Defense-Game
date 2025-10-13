@@ -6,9 +6,18 @@ using UnityEngine.AI;
 // Handles spawning of enemies at a set interval
 public class EnemySpawner : MonoBehaviour
 {
+    [System.Serializable]
+    public class EnemyPrefabInfo
+    {
+        public GameObject prefab;
+        public float spawnWeight = 1f; // Relative chance to spawn this type
+    }
     [Header("Enemy Settings")]
-    public GameObject enemyPrefab;
+    public EnemyPrefabInfo easyEnemyPrefab;
+    public EnemyPrefabInfo mediumEnemyPrefab;
+    public EnemyPrefabInfo hardEnemyPrefab;
 
+    [Header("Spawn Settings")]
     public float spawnInterval = 3f; // Time in seconds between spawns
     public float spawnHeightOffset = 0.5f; // Height offset above tile surface
 
@@ -45,7 +54,7 @@ public class EnemySpawner : MonoBehaviour
             hexGridGenerator = FindFirstObjectByType<HexGridGenerator>();
         }
 
-        if (enemyPrefab == null)
+        if (easyEnemyPrefab.prefab == null && mediumEnemyPrefab.prefab == null && hardEnemyPrefab.prefab == null)
         {
             Debug.LogError("EnemySpawner: Enemy prefab is not assigned!");
         }
@@ -164,13 +173,13 @@ public class EnemySpawner : MonoBehaviour
 
         while (isSpawning) // Changed from while(true) to while(isSpawning)
         {
-            if (IsReadyToSpawn && spawnPointCoords.Count > 0 && enemyPrefab != null)
+            if (IsReadyToSpawn && spawnPointCoords.Count > 0)
             {
                 SpawnSingleEnemy();
             }
             else if (enableDebugLogs)
             {
-                Debug.LogWarning($"EnemySpawner: Cannot spawn - Ready: {IsReadyToSpawn}, SpawnPoints: {spawnPointCoords.Count}, Prefab: {enemyPrefab != null}");
+                Debug.LogWarning($"EnemySpawner: Cannot spawn - Ready: {IsReadyToSpawn}, SpawnPoints: {spawnPointCoords.Count}, Prefabs: Easy={easyEnemyPrefab.prefab != null}, Medium={mediumEnemyPrefab.prefab != null}, Hard={hardEnemyPrefab.prefab != null}");
             }
 
             // Wait for specified interval before spawning next enemy
@@ -198,37 +207,69 @@ public class EnemySpawner : MonoBehaviour
             // Try to find a valid NavMesh position
             if (NavMesh.SamplePosition(spawnPos, out NavMeshHit hit, 2.0f, NavMesh.AllAreas))
             {
-                GameObject newEnemy = Instantiate(enemyPrefab, hit.position, Quaternion.identity);
-
-                if (enableDebugLogs)
-                    Debug.Log($"EnemySpawner: Successfully spawned enemy at {hit.position}");
-
-                // Ensure the enemy has proper components
-                Enemy enemyComponent = newEnemy.GetComponent<Enemy>();
-                if (enemyComponent == null)
+                GameObject selectedPrefab = SelectEnemyPrefab();
+                if (selectedPrefab != null)
                 {
-                    Debug.LogError("EnemySpawner: Spawned enemy prefab missing Enemy component!");
-                }
+                    GameObject newEnemy = Instantiate(selectedPrefab, hit.position, Quaternion.identity);
 
-                NavMeshAgent agent = newEnemy.GetComponent<NavMeshAgent>();
-                if (agent == null)
-                {
-                    Debug.LogError("EnemySpawner: Spawned enemy prefab missing NavMeshAgent component!");
+                    if (enableDebugLogs)
+                        Debug.Log($"EnemySpawner: Successfully spawned enemy at {hit.position}");
+
+                    Enemy enemyComponent = newEnemy.GetComponent<Enemy>();
+                    if (enemyComponent == null)
+                    {
+                        Debug.LogError("EnemySpawner: Spawned enemy prefab missing Enemy component!");
+                    }
+
+                    NavMeshAgent agent = newEnemy.GetComponent<NavMeshAgent>();
+                    if (agent == null)
+                    {
+                        Debug.LogError("EnemySpawner: Spawned enemy prefab missing NavMeshAgent component!");
+                    }
                 }
             }
             else
             {
                 Debug.LogError($"EnemySpawner: Could not find valid NavMesh position near tile at {randomCoord}. Tile position: {spawnPos}");
-
-                // Try spawning directly on tile as fallback
-                GameObject newEnemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-                if (enableDebugLogs)
-                    Debug.Log($"EnemySpawner: Spawned enemy at tile position (no NavMesh) {spawnPos}");
             }
         }
         else
         {
             Debug.LogError($"EnemySpawner: No tile found at spawn coordinate {randomCoord}");
         }
+    }
+
+    // Randomly selects an enemy prefab based on their weights
+    private GameObject SelectEnemyPrefab()
+    {
+        float totalWeight = 0f;
+
+        // Sum up all weights for available prefabs
+        if (easyEnemyPrefab.prefab != null) totalWeight += easyEnemyPrefab.spawnWeight;
+        if (mediumEnemyPrefab.prefab != null) totalWeight += mediumEnemyPrefab.spawnWeight;
+        if (hardEnemyPrefab.prefab != null) totalWeight += hardEnemyPrefab.spawnWeight;
+
+        float random = Random.Range(0f, totalWeight);
+        float currentWeight = 0f;
+
+        // Pick prefab based on weighted random selection
+        if (easyEnemyPrefab.prefab != null)
+        {
+            currentWeight += easyEnemyPrefab.spawnWeight;
+            if (random <= currentWeight) return easyEnemyPrefab.prefab;
+        }
+      
+        if (mediumEnemyPrefab.prefab != null)
+        {
+            currentWeight += mediumEnemyPrefab.spawnWeight;
+            if (random <= currentWeight) return mediumEnemyPrefab.prefab;
+        }
+
+        if (hardEnemyPrefab.prefab != null)
+        {
+            return hardEnemyPrefab.prefab;
+        }
+
+        return null;
     }
 }

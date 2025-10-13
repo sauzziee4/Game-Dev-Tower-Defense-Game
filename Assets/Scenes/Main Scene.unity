@@ -18659,7 +18659,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cb9650b4f5a859458d7c60be6069f5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 7583552093648287185, guid: 54f45197007f7ce4da074d531b33ceb9, type: 3}
+  easyEnemyPrefab:
+    prefab: {fileID: 3928506789369414557, guid: fad2d0a20a3828d4ea5eb14e929f6e11, type: 3}
+    spawnWeight: 1
+  mediumEnemyPrefab:
+    prefab: {fileID: 734308373822582415, guid: 5292acd9fe0642d4ba9458b001717af7, type: 3}
+    spawnWeight: 1
+  hardEnemyPrefab:
+    prefab: {fileID: 8258830237544131802, guid: 0805956ad5e015841ae3ea63cdbc9750, type: 3}
+    spawnWeight: 1
   spawnInterval: 3
   spawnHeightOffset: 0.5
   hexGridGenerator: {fileID: 1914826908}
