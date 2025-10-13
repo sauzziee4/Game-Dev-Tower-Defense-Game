@@ -233,7 +233,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  attackRange: 5
+  attackRange: 0
   fireRate: 2
   damage: 15
   projectileSpeed: 15
