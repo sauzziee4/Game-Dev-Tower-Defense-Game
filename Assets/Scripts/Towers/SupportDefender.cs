@@ -52,22 +52,45 @@ public class SupportDefender : MonoBehaviour, IDefendable
     #region Unity Functions
     private void OnEnable()
     {
+        if (DefendableManager.Instance != null)
+            DefendableManager.Instance.AddDefendable(this);
+    }
 
+    private void OnDisable()
+    {
+        if (DefendableManager.Instance != null)
+            DefendableManager.Instance.RemoveDefendable(this);
     }
 
     private void Awake()
     {
-
+        health = maxHealth;
+        currentEnergy = maxEnergy;
+        supportRenderer = GetComponent<Renderer>();
+        if(supportRenderer != null)
+        {
+            originalMaterial = supportRenderer.material;
+        }
     }
 
     private void Start()
     {
-
+        CreateRangeIndicators();
+        var hexGridGenerator = FindFirstObjectByType<HexGridGenerator>();
+        if(hexGridGenerator != null)
+        {
+            gridPosition = hexGridGenerator.WorldToHex(transform.position);
+        }
     }
 
     private void Update()
     {
+        if (isDestroyed) return;
 
+        RegenerateEnergy();
+        PreformSupportActions();
+        UpdateVisualState();
+        HandleShieldAbility();
     }
     #endregion
 
@@ -172,21 +195,26 @@ public class SupportDefender : MonoBehaviour, IDefendable
 
     private void HealNearbyDefenders(List<IDefendable> nearbyDefenders)
     {
-        foreach(var defender in nearbyDefenders)
+        foreach (var defender in nearbyDefenders)
         {
-            if(defender.health < GetMaxHealth(defender))
+            if (defender.health < GetMaxHealth(defender))
             {
                 if (ConsumeEnergy(healCost * Time.deltaTime))
                 {
                     float healAmount = healingRate * Time.deltaTime;
                     defender.health = Mathf.Min(defender.health + healAmount, GetMaxHealth(defender));
-
-                    if(healEffect != null && !healEffect.isPlaying) healEffect.Play();
-                } 
+                    //Debug.LogWarning("Healing Defender!");
+                    
+                    
+                    if (healEffect != null && !healEffect.isPlaying)
+                    {
+                        Debug.LogWarning("Healing Effect!");
+                        healEffect.Play();
+                    }
+                }
             }
         }
     }
-
 
     private void BuffNearbyDefenders(List<IDefendable> nearbyDefenders)
     {

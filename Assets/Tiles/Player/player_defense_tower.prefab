@@ -233,8 +233,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  attackRange: 0
-  fireRate: 2
+  attackRange: 4
+  fireRate: 0.5
   damage: 15
   projectileSpeed: 15
   turretHead: {fileID: 5288383901682462268}
