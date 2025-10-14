@@ -1,7 +1,8 @@
-using UnityEngine;
-using UnityEngine.AI;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.AI;
 
 public enum EnemyType
 {
@@ -13,6 +14,12 @@ public enum EnemyType
 //this is a placeholder and needs to be intergrated with pathfinding logic
 public class Enemy : MonoBehaviour, IDefendable
 {
+    private Animator animator;
+
+    private static readonly int IsSpawningHash = Animator.StringToHash("isSpawning");
+    private static readonly int IsMovingHash = Animator.StringToHash("isMoving");
+    private static readonly int IsAttackingHash = Animator.StringToHash("isAttacking");
+
     //IDefendable implementation
     public float health { get; set; }
 
@@ -49,11 +56,33 @@ public class Enemy : MonoBehaviour, IDefendable
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
+        agent = GetComponent<NavMeshAgent>();
         if (agent == null)
         {
             Debug.Log("enemy prefab missing navMeshAgent", this);
         }
+        if (animator == null)
+        {
+            Debug.Log("enemy prefab missing Animator", this);
+        }
         health = maxHealth;
+
+        // Start with spawn animation
+        if (animator != null)
+        {
+            animator.SetBool(IsSpawningHash, true);
+            // Automatically transition to run after spawn animation
+            StartCoroutine(TransitionAfterSpawn());
+        }
+    }
+
+    private IEnumerator TransitionAfterSpawn()
+    {
+        // Adjust this time to match your spawn animation length
+        yield return new WaitForSeconds(1.5f);
+        animator.SetBool(IsSpawningHash, false);
+        animator.SetBool(IsMovingHash, true);
     }
 
     private void ConfigureEnemyStats()
@@ -161,6 +190,13 @@ public class Enemy : MonoBehaviour, IDefendable
             {
                 agent.isStopped = true; // stop moving
 
+                // Update animations
+                if (animator != null)
+                {
+                    animator.SetBool(IsMovingHash, false);
+                    animator.SetBool(IsAttackingHash, true);
+                }
+
                 if (Time.time >= nextAttackTime)
                 {
                     AttackTarget();
@@ -170,6 +206,14 @@ public class Enemy : MonoBehaviour, IDefendable
             else
             {
                 agent.isStopped = false;
+
+                // Update animations
+                if (animator != null)
+                {
+                    animator.SetBool(IsMovingHash, true);
+                    animator.SetBool(IsAttackingHash, false);
+                }
+
                 // Make sure agent is still heading towards current target
                 if (agent.destination != currentTarget.transform_position)
                 {
@@ -264,4 +308,4 @@ public class Enemy : MonoBehaviour, IDefendable
             Destroy(gameObject);
         }
     }
-} 
+}

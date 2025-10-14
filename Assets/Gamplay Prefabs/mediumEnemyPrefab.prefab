@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: ea7475e0d935e5144a38498dca7790d1, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.45
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ea7475e0d935e5144a38498dca7790d1, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.45
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ea7475e0d935e5144a38498dca7790d1, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.45
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ea7475e0d935e5144a38498dca7790d1, type: 3}
       propertyPath: m_LocalPosition.x
@@ -147,8 +147,8 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 734308373822582415}
   m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Avatar: {fileID: 9000000, guid: ea7475e0d935e5144a38498dca7790d1, type: 3}
+  m_Controller: {fileID: 9100000, guid: d1b289e6d659f36438625365a354b1da, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -206,8 +206,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.2392807, y: 2.369221, z: 1.1994015}
-  m_Center: {x: -0.00000023179585, y: 1.0834113, z: -0.033233564}
+  m_Size: {x: 1.2392807, y: 2.005726, z: 1.0497267}
+  m_Center: {x: -0.00000022351742, y: 0.9978831, z: -0.0011605769}
 --- !u!23 &7622221060275150805
 MeshRenderer:
   m_ObjectHideFlags: 0
