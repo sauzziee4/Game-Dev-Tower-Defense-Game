@@ -4699,6 +4699,72 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 144103271}
   m_Mesh: {fileID: 703726867841230225, guid: d3925845f202c7f4783ecf4b800ba7ee, type: 3}
+--- !u!1 &145838141
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 145838143}
+  - component: {fileID: 145838142}
+  m_Layer: 0
+  m_Name: ProceduralSpawnManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &145838142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 145838141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1b67d7674d919f4d8454e4df071f92d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemySpawner: {fileID: 592438767}
+  hexGridGenerator: {fileID: 1914826908}
+  turretPlacementManager: {fileID: 8164086976043008151}
+  baseDifficultyScore: 1
+  difficultyIncreaseRate: 0.5
+  maxDifficultyScore: 5
+  difficultyCheckInterval: 5
+  targetTowerHealthThreshold: 0.85
+  criticalTowerHealthThreshold: 0.4
+  highResourceThreshold: 200
+  lowResourceThreshold: 50
+  minSpawnInterval: 1.5
+  maxSpawnInterval: 5
+  baseSpawnInterval: 3
+  enemiesPerWave: 5
+  timeBetweenWaves: 10
+  useWaveSystem: 1
+  eliteSpawnChance: 0.1
+  eliteSpawnInterval: 30
+  enableDynamicSpawns: 1
+  dynamicSpawnDistanceFromTower: 10
+  enableDebugLogs: 1
+--- !u!4 &145838143
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 145838141}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.906017, y: 2.2377112, z: 20.52018}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &152885048
 GameObject:
   m_ObjectHideFlags: 0
@@ -70314,6 +70380,10 @@ PrefabInstance:
       value: HexGridGenerator
       objectReference: {fileID: 0}
     - target: {fileID: 5717941172062005382, guid: 222158524f9a04344ad1dfa148b65613, type: 3}
+      propertyPath: pathCount
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5717941172062005382, guid: 222158524f9a04344ad1dfa148b65613, type: 3}
       propertyPath: towerPrefab
       value: 
       objectReference: {fileID: 919132149155446097, guid: dc7c082f0755a9a41bdf2b2e3a5a81c2, type: 3}
@@ -73964,3 +74034,4 @@ SceneRoots:
   - {fileID: 8953271474581114315}
   - {fileID: 6075384358447754767}
   - {fileID: 1785167125}
+  - {fileID: 145838143}

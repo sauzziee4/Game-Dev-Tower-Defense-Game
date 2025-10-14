@@ -296,6 +296,10 @@ public class DefenderType
         {
             hexTile.SetOccupied(newTurret);
         }
+        if(ProceduralSpawnManager.Instance != null)
+        {
+            ProceduralSpawnManager.Instance.NotifyDefenderPlaced(coords);
+        }
 
         playerResources -= selectedType.cost;
         UpdateResourceDisplay();
@@ -427,4 +431,6 @@ public class DefenderType
     public bool IsPlacingTurret => isPlacingTurret;
     public DefenderType[] DefenderTypes => defenderTypes;
     public int SelectedDefenderIndex => selectedDefenderIndex;
+
+    public static object Instance { get; internal set; }
 }

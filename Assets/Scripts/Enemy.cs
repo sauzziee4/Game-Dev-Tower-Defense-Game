@@ -305,9 +305,25 @@ public class Enemy : MonoBehaviour, IDefendable
         Debug.Log($"Enemy health: {health}");
         if (health <= 0)
         {
-            //add resources when enemy defeated
-            FindFirstObjectByType<TurretPlacementManager>()?.AddResources(resourceReward);
-            Destroy(gameObject);
+            Die();
         }
+    }
+
+    public void Die()
+    {
+        if (ProceduralSpawnManager.Instance != null)
+        {
+            ProceduralSpawnManager.Instance.NotifyEnemyKilled();
+        }
+
+
+        if (TurretPlacementManager.Instance != null)
+        {
+            FindFirstObjectByType<TurretPlacementManager>()?.AddResources(resourceReward);
+        }
+
+        allEnemies.Remove(this);
+
+        Destroy(gameObject);
     }
 }
