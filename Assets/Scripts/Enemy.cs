@@ -93,17 +93,19 @@ public class Enemy : MonoBehaviour, IDefendable
                 maxHealth = 15f;
                 attackDamage = 3f;
                 speed = 7f;
-               // add resourceReward = 5f; ??
+                resourceReward = 5f;
                 break;
 
             case EnemyType.Medium:
                 //keep default values
+                resourceReward = 10f;
                 break;
 
             case EnemyType.Hard:
                 maxHealth = 30f;
                 attackDamage = 8f;
                 speed = 3.5f;
+                resourceReward = 15f;
                 break;
         }
 
