@@ -19,6 +19,11 @@ public class WorldHealthBar : MonoBehaviour
         {
             canvas.worldCamera = mainCamera;
         }
+
+        if (fillImage != null)
+        {
+            fillImage.color = Color.green;
+        }
     }
 
     private void LateUpdate()
