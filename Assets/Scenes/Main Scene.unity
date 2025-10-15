@@ -4739,11 +4739,11 @@ MonoBehaviour:
   criticalTowerHealthThreshold: 0.4
   highResourceThreshold: 200
   lowResourceThreshold: 50
-  minSpawnInterval: 1.5
+  minSpawnInterval: 0.5
   maxSpawnInterval: 5
-  baseSpawnInterval: 4
-  enemiesPerWave: 20
-  timeBetweenWaves: 10
+  baseSpawnInterval: 3
+  enemiesPerWave: 30
+  timeBetweenWaves: 2
   useWaveSystem: 1
   OnWaveStart:
     m_PersistentCalls:
@@ -8465,15 +8465,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: eb65027b04ef099439e5b36b517559af, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -17.262293
+      value: -17.85
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eb65027b04ef099439e5b36b517559af, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.7700042
+      value: 1.77
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eb65027b04ef099439e5b36b517559af, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 40.53353
+      value: 40.68
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eb65027b04ef099439e5b36b517559af, type: 3}
       propertyPath: m_LocalRotation.w
@@ -43921,7 +43921,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e5a5f1ce020ab54ea869630e93d039f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  _maxHealth: 100
+  healthBarPrefab: {fileID: 0}
+  healthBarYOffset: 2
   attackRange: 5
   fireRate: 1
   projectilePrefab: {fileID: 3722865764368831054, guid: 4558bb6004690994f856875b3baab762, type: 3}

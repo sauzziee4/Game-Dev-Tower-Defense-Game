@@ -142,7 +142,6 @@ public class ProceduralSpawnManager : MonoBehaviour
 
             if (availableSpawnPoints == null || availableSpawnPoints.Count == 0)
             {
-                Debug.LogError("ProceduralSpawnManager: No spawn points retrieved from HexGridGenerator! Delaying initialization...");
                 StartCoroutine(RetryInitialization());
                 return;
             }
