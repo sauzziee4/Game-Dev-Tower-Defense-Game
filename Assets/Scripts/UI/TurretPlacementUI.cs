@@ -229,7 +229,7 @@ public class TurretPlacementUI : MonoBehaviour
         }
         else
         {
-            instructionText.text = "Click 'Place Turret'\nPress 1-9 to switch types\nLeft Click to place a turret";
+            instructionText.text = "Click 'Place Turret'\nLeft Click to place a turret";
             instructionText.color = Color.white;
         }
     }
