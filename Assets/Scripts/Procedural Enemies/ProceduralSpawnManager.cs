@@ -346,7 +346,7 @@ public class ProceduralSpawnManager : MonoBehaviour
             if (isBossWave)
             {
                 if (enableDebugLogs)
-                    Debug.Log($"🔥 BOSS WAVE {currentWave} STARTED! 🔥");
+                    Debug.Log($"BOSS WAVE {currentWave} STARTED!");
                 
                 yield return StartCoroutine(SpawnBossWave());
             }
