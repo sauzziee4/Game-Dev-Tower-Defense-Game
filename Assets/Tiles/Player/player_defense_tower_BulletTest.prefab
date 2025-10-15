@@ -158,7 +158,7 @@ MonoBehaviour:
   maxHealth: 100
   attackRange: 5
   fireRate: 2
-  damage: 15
+  damage: 10
   projectileSpeed: 15
   turretHead: {fileID: 6977957049245171812}
   projectileSpawnPoint: {fileID: 6945474204586099821}

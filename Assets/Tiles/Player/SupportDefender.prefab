@@ -115,7 +115,7 @@ MonoBehaviour:
   shieldRange: 5
   shieldStrength: 25
   shieldDuration: 6
-  shieldCoolDown: 20
+  shieldCoolDown: 10
   shieldEnergyCost: 40
   lastShieldTime: 0
   healingRangeIndicator: {fileID: 0}

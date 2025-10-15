@@ -292,7 +292,7 @@ public class DefenderType
         placedTurrets[coords] = newTurret;
 
         // Mark the hex tile as occupied
-        if (hexTile != null)
+        if (hexTile != null && playerResources > selectedType.cost)
         {
             hexTile.SetOccupied(newTurret);
         }
@@ -301,8 +301,7 @@ public class DefenderType
             ProceduralSpawnManager.Instance.NotifyDefenderPlaced(coords);
         }
 
-        playerResources -= selectedType.cost;
-        UpdateResourceDisplay();
+        DeductResources(selectedType.cost);
 
         CancelTurretPlacement();
 

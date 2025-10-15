@@ -90,22 +90,22 @@ public class Enemy : MonoBehaviour, IDefendable
         switch (enemyType)
         {
             case EnemyType.Easy:
-                maxHealth = 15f;
+                maxHealth = 20f;
                 attackDamage = 3f;
                 speed = 7f;
-                resourceReward = 5f;
+                resourceReward = 3f;
                 break;
 
             case EnemyType.Medium:
                 //keep default values
-                resourceReward = 10f;
+                resourceReward = 5f;
                 break;
 
             case EnemyType.Hard:
-                maxHealth = 30f;
+                maxHealth = 50f;
                 attackDamage = 8f;
                 speed = 3.5f;
-                resourceReward = 15f;
+                resourceReward = 10f;
                 break;
         }
 
@@ -305,6 +305,7 @@ public class Enemy : MonoBehaviour, IDefendable
         Debug.Log($"Enemy health: {health}");
         if (health <= 0)
         {
+            FindFirstObjectByType<TurretPlacementManager>()?.AddResources(resourceReward);
             Die();
         }
     }
@@ -314,12 +315,6 @@ public class Enemy : MonoBehaviour, IDefendable
         if (ProceduralSpawnManager.Instance != null)
         {
             ProceduralSpawnManager.Instance.NotifyEnemyKilled();
-        }
-
-
-        if (TurretPlacementManager.Instance != null)
-        {
-            FindFirstObjectByType<TurretPlacementManager>()?.AddResources(resourceReward);
         }
 
         allEnemies.Remove(this);

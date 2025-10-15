@@ -4732,19 +4732,30 @@ MonoBehaviour:
   hexGridGenerator: {fileID: 1914826908}
   turretPlacementManager: {fileID: 8164086976043008151}
   baseDifficultyScore: 1
-  difficultyIncreaseRate: 0.5
-  maxDifficultyScore: 5
-  difficultyCheckInterval: 5
+  difficultyIncreaseRate: 1
+  maxDifficultyScore: 7
+  difficultyCheckInterval: 3
   targetTowerHealthThreshold: 0.85
   criticalTowerHealthThreshold: 0.4
   highResourceThreshold: 200
   lowResourceThreshold: 50
   minSpawnInterval: 1.5
   maxSpawnInterval: 5
-  baseSpawnInterval: 3
-  enemiesPerWave: 5
+  baseSpawnInterval: 4
+  enemiesPerWave: 20
   timeBetweenWaves: 10
   useWaveSystem: 1
+  OnWaveStart:
+    m_PersistentCalls:
+      m_Calls: []
+  OnWaveComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  OnWaveProgress:
+    m_PersistentCalls:
+      m_Calls: []
+  allowDefenderPlacementBetweenWaves: 1
+  wavePrepTime: 5
   eliteSpawnChance: 0.1
   eliteSpawnInterval: 30
   enableDynamicSpawns: 1
@@ -23983,7 +23994,7 @@ Transform:
   m_GameObject: {fileID: 713886209}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.1849842, y: 6.271923, z: -12.753625}
+  m_LocalPosition: {x: 3.1849842, y: 6.271923, z: -12.87}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -43911,11 +43922,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  attackRange: 3
-  fireRate: 2
+  attackRange: 5
+  fireRate: 1
   projectilePrefab: {fileID: 3722865764368831054, guid: 4558bb6004690994f856875b3baab762, type: 3}
   projectileSpawnPoint: {fileID: 1884960403}
-  projectileSpeed: 10
+  projectileSpeed: 3
   projectileDamage: 5
 --- !u!4 &1282699702
 Transform:
@@ -73552,7 +73563,7 @@ MonoBehaviour:
   - name: Shooter Tower
     prefab: {fileID: 5129727115049618317, guid: 3cf0730bc1d4879498efc6749bf21bc4, type: 3}
     previewPrefab: {fileID: 2110109564227069871, guid: 807fc53fa0f3ad544a8303cc8db7db14, type: 3}
-    cost: 1
+    cost: 50
     icon: {fileID: 0}
   - name: Barrier Tower
     prefab: {fileID: 7792922605552114356, guid: f57a5a8558610f746b67ddb1e7dd04e4, type: 3}
@@ -73562,7 +73573,7 @@ MonoBehaviour:
   - name: Support Tower
     prefab: {fileID: 7014804762202524817, guid: b93b6181c23537745994de639b284e4c, type: 3}
     previewPrefab: {fileID: 6075384358447754768}
-    cost: 5
+    cost: 200
     icon: {fileID: 0}
   turretPrefab: {fileID: 3967922843619066559}
   turretCost: 50
@@ -73691,7 +73702,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5403951172505901801, guid: 6414cae9d792b7645adcea950d43dd30, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7308176175868089316, guid: 6414cae9d792b7645adcea950d43dd30, type: 3}
       propertyPath: variant.prefab

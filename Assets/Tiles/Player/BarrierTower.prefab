@@ -191,7 +191,7 @@ MonoBehaviour:
   maxRepairHealth: 150
   slowRadius: 3
   slowEffect: 0.5
-  damageRadius: 1.5
+  damageRadius: 3
   damagePerSecond: 10
   slowAreaIndicator: {fileID: 0}
   damageAreaIndicator: {fileID: 0}

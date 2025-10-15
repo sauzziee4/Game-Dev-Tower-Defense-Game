@@ -36,6 +36,15 @@ public class ProceduralSpawnManager : MonoBehaviour
     [SerializeField] private float timeBetweenWaves = 10f;
     [SerializeField] private bool useWaveSystem = false;
 
+    [Header("Wave Events")]
+    public UnityEngine.Events.UnityEvent<int> OnWaveStart;
+    public UnityEngine.Events.UnityEvent<int> OnWaveComplete;
+    public UnityEngine.Events.UnityEvent<int, int> OnWaveProgress;
+
+    [Header("Wave Preparation")]
+    [SerializeField] private bool allowDefenderPlacementBetweenWaves = true;
+    [SerializeField] private float wavePrepTime = 5f;
+
     [Header("Elite Enemy Settings")]
     [SerializeField] private float eliteSpawnChance = 0.1f;
     [SerializeField] private float eliteSpawnInterval = 30f;
@@ -242,6 +251,7 @@ public class ProceduralSpawnManager : MonoBehaviour
     private IEnumerator ContinuousSpawnSystem()
     {
         yield return new WaitForSeconds(2f);
+        isWaveActive = true; 
 
         while(!GameManager.Instance.isGameOver)
         {
@@ -253,6 +263,8 @@ public class ProceduralSpawnManager : MonoBehaviour
 
             yield return new WaitForSeconds(currentSpawnInterval);
         }
+        
+        isWaveActive = false;
     }
 
     #endregion
@@ -263,15 +275,29 @@ public class ProceduralSpawnManager : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
 
-        while(!GameManager.Instance.isGameOver)
+        while (!GameManager.Instance.isGameOver)
         {
+
             currentWave++;
             enemiesSpawnedThisWave = 0;
+            isWaveActive = false;
+
+            if (enableDebugLogs)
+                Debug.Log($"Wave {currentWave} preparation phase - {wavePrepTime} seconds until start");
+
+            // Notify wave is coming (for UI updates)
+            OnWaveStart?.Invoke(currentWave);
+
+            // Give player time to prepare
+            yield return new WaitForSeconds(wavePrepTime);
+
+            // WAVE ACTIVE PHASE
             isWaveActive = true;
 
             if (enableDebugLogs)
-                Debug.Log($"Starting Wave {currentWave}");
+                Debug.Log($"Wave {currentWave} STARTED - Spawning {enemiesPerWave} enemies");
 
+            // Spawn all enemies in the wave
             while (enemiesSpawnedThisWave < enemiesPerWave && !GameManager.Instance.isGameOver)
             {
                 if (!GameManager.Instance.isPaused)
@@ -279,20 +305,50 @@ public class ProceduralSpawnManager : MonoBehaviour
                     SpawnEnemy();
                     totalEnemiesSpawned++;
                     enemiesSpawnedThisWave++;
+
+                    // Notify progress
+                    OnWaveProgress?.Invoke(enemiesSpawnedThisWave, enemiesPerWave);
                 }
 
                 yield return new WaitForSeconds(currentSpawnInterval);
             }
 
+            // WAVE COMPLETE PHASE
             isWaveActive = false;
 
             if (enableDebugLogs)
-                Debug.Log($"Wave {currentWave} complete. Waiting for next wave.. ");
+                Debug.Log($"Wave {currentWave} spawning complete. Waiting for enemies to be cleared...");
 
+            // Wait for all enemies from this wave to be defeated before starting cooldown
+            yield return StartCoroutine(WaitForWaveCleanup());
+
+            if (enableDebugLogs)
+                Debug.Log($"Wave {currentWave} COMPLETE. Next wave in {timeBetweenWaves} seconds");
+
+            // Notify wave complete
+            OnWaveComplete?.Invoke(currentWave);
+
+            // Cooldown between waves
             yield return new WaitForSeconds(timeBetweenWaves);
         }
     }
+    
+    private IEnumerator WaitForWaveCleanup()
+    {
+        float timeout = 60f;
+        float elapsed = 0f;
 
+        while (Enemy.allEnemies.Count > 0 && elapsed < timeout)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        
+        if(elapsed >= timeout && enableDebugLogs)
+        {
+            Debug.LogWarning($"Wave cleanup timeout - {Enemy.allEnemies.Count} enemies still active");
+        }
+    }
     #endregion
 
     #region Enemy Spawning
@@ -686,10 +742,8 @@ public class ProceduralSpawnManager : MonoBehaviour
     
     #region Public API
     
-    public void NotifyEnemyKilled()
-    {
-        totalEnemiesKilled++;
-    }
+    public void NotifyEnemyKilled() => totalEnemiesKilled++;
+    
     
     public void NotifyDefenderPlaced(Vector2Int coords)
     {
@@ -699,16 +753,11 @@ public class ProceduralSpawnManager : MonoBehaviour
         }
         defenderPlacements[coords]++;
     }
-    
-    public float GetCurrentDifficulty()
-    {
-        return currentDifficultyScore;
-    }
-    
-    public int GetCurrentWave()
-    {
-        return currentWave;
-    }
-    
+
+    public float GetCurrentDifficulty() => currentDifficultyScore;
+    public int GetCurrentWave() => currentWave;
+    public bool IsWaveActive() => isWaveActive;
+    public (int current, int total) GetWaveProgress() => (enemiesSpawnedThisWave, enemiesPerWave);
+    public int GetRemainingEnemiesInWave() => enemiesPerWave - enemiesSpawnedThisWave;
     #endregion
 }
