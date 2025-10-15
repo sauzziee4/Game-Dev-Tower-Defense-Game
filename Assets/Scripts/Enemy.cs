@@ -30,8 +30,8 @@ public class Enemy : MonoBehaviour, IDefendable
 
     [Header("Enemy Stats")]
     public EnemyType enemyType;
-    public float maxHealth = 20f;
-
+    [SerializeField] private float _maxHealth = 20f; // Backing field
+    public float maxHealth => _maxHealth; // Property for IDefendable interface
     public float speed = 5f;
     public float attackDamage = 5f;
     public float attackRange = 1.5f;
@@ -90,7 +90,7 @@ public class Enemy : MonoBehaviour, IDefendable
         switch (enemyType)
         {
             case EnemyType.Easy:
-                maxHealth = 20f;
+                _maxHealth = 20f;
                 attackDamage = 3f;
                 speed = 7f;
                 resourceReward = 3f;
@@ -98,11 +98,12 @@ public class Enemy : MonoBehaviour, IDefendable
 
             case EnemyType.Medium:
                 //keep default values
+                _maxHealth = 35f;
                 resourceReward = 5f;
                 break;
 
             case EnemyType.Hard:
-                maxHealth = 50f;
+                _maxHealth = 50f;
                 attackDamage = 8f;
                 speed = 3.5f;
                 resourceReward = 10f;
