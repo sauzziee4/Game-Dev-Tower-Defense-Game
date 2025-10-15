@@ -8,11 +8,12 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
 {
     //implements IDefendable
     public float health { get; set; }
+    public float maxHealth => _maxHealth;
+    [SerializeField] private float _maxHealth = 100f;
     public Vector3 transform_position => transform.position;
 
     //declarations for turret stats 
     [Header("Turret Stats")]
-    public float maxHealth = 100f;
     public float attackRange = 5f;
     public float fireRate = 2f; // attacks per second
     public float damage = 15f;
@@ -25,8 +26,9 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
     public GameObject rangeIndicator;
 
     [Header("Health Visual Feedback")]
-    public GameObject healthBarPrefab; // Optional health bar prefab
-    private GameObject healthBarInstance;
+    public GameObject healthBarPrefab;
+    private GameObject healthBarInstance; 
+    public float healthBarYOffset = 2f;
     private Renderer turretRenderer;
     private Material originalMaterial;
     private Color originalColor;
@@ -81,6 +83,12 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
             originalMaterial = turretRenderer.material;
             originalColor = originalMaterial.color;
         }
+
+        // Health bar setup
+        if (healthBarPrefab != null)
+        {
+            CreateHealthBar();
+        }
     }
 
     //Set up the visual components and grid positioning after all the objects are initailized. 
@@ -97,12 +105,6 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         if (rangeIndicator != null)
         {
             rangeIndicator.SetActive(false);
-        }
-
-        //health bar
-        if (healthBarPrefab != null)
-        {
-            CreateHealthBar();
         }
 
         // Store grid position for reference
@@ -123,8 +125,6 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
     {
         // dont't do anything if the turret is destroyed
         if (isDestroyed) return;
-
-        // update health bar
         UpdateHealthBar();
 
         // find and track target
@@ -157,6 +157,24 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
     #endregion
 
     #region Health and Damage Systems
+    private void CreateHealthBar()
+    {
+        healthBarInstance = Instantiate(healthBarPrefab, transform);
+        healthBarInstance.transform.localPosition = Vector3.up * healthBarYOffset;
+        healthBarInstance.transform.localScale = Vector3.one;
+    }
+
+    private void UpdateHealthBar()
+    {
+        if (healthBarInstance == null) return;
+        Transform fillBar = healthBarInstance.transform.GetChild(0);
+        if (fillBar != null)
+        {
+            float healthPercent = health / maxHealth;
+            fillBar.localScale = new Vector3(healthPercent, 1f, 1f);
+        }
+    }
+
     // Allows turret to be damaged by enemies
     public void TakeDamage(float damageAmount)
     {
@@ -219,30 +237,6 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         if (healthPercent < 0.3f)
         {
             transform.localScale = Vector3.one * (0.9f + healthPercent * 0.1f);
-        }
-    }
-    #endregion
-
-    #region Health Bar System
-    //Create and position health bar above the turrets
-    private void CreateHealthBar()
-    {
-        healthBarInstance = Instantiate(healthBarPrefab, transform);
-        healthBarInstance.transform.localPosition = Vector3.up * 2f; // Position above turret
-        healthBarInstance.transform.localScale = Vector3.one;
-    }
-
-    //update the health bar with the health percentage
-    private void UpdateHealthBar()
-    {
-        if (healthBarInstance == null) return;
-
-        
-        Transform fillBar = healthBarInstance.transform.GetChild(0);
-        if (fillBar != null)
-        {
-            float healthPercent = health / maxHealth;
-            fillBar.localScale = new Vector3(healthPercent, 1f, 1f);
         }
     }
     #endregion
@@ -339,7 +333,7 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
             attackRange *= 1.1f; // Smaller range increase
 
             // Increase max health and fully heal on upgrade
-            maxHealth *= upgradeStatMultiplier;
+            _maxHealth *= upgradeStatMultiplier;
             health = maxHealth;
 
             // Reset visual appearance since we're at full health

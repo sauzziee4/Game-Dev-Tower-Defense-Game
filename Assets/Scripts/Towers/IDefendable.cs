@@ -4,6 +4,7 @@ using UnityEngine;
 public interface IDefendable
 {
     float health { get; set; }
+    float maxHealth { get; }
 
     void TakeDamage(float damage);
 

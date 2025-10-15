@@ -5,10 +5,15 @@ using System.Linq;
 public class BarrierDefender : MonoBehaviour, IDefendable
 {
     public float health { get; set; }
+    public float maxHealth { get; private set; } = 200f;
     public Vector3 transform_position => transform.position;
 
+    [Header("Health Bar")]
+    public GameObject healthBarPrefab;
+    private GameObject healthBarInstance;
+    public float healthBarYOffset = 2f;
+
     [Header("Barrier Defender Stat Settings")]
-    public float maxHealth = 200f;
     public float repairRate = 2f;
     public float maxRepairHealth = 150f;
 
@@ -56,6 +61,7 @@ public class BarrierDefender : MonoBehaviour, IDefendable
 
     private void Awake()
     {
+        maxHealth = 200f;
         health = maxHealth;
         barrierRenderer = GetComponent<Renderer>();
         if (barrierRenderer != null)
@@ -72,12 +78,15 @@ public class BarrierDefender : MonoBehaviour, IDefendable
         {
             gridPosition = hexGridGenerator.WorldToHex(transform.position);
         }
+
+        CreateHealthBar();
     }
 
     private void Update()
     {
         if (isDestroyed) return;
 
+        UpdateHealthBar();
         HandleSelfRepair();
         ApplyAreaEffects();
         UpdateVisualState();
@@ -85,6 +94,27 @@ public class BarrierDefender : MonoBehaviour, IDefendable
     #endregion
 
     #region Health and Damage System
+
+    private void CreateHealthBar()
+    {
+        if (healthBarPrefab != null)
+        {
+            healthBarInstance = Instantiate(healthBarPrefab, transform);
+            healthBarInstance.transform.localPosition = Vector3.up * healthBarYOffset;
+            healthBarInstance.transform.localScale = Vector3.one;
+        }
+    }
+
+    private void UpdateHealthBar()
+    {
+        if (healthBarInstance == null) return;
+        Transform fillBar = healthBarInstance.transform.GetChild(0);
+        if (fillBar != null)
+        {
+            float healthPercent = health / maxHealth;
+            fillBar.localScale = new Vector3(healthPercent, 1f, 1f);
+        }
+    }
 
     public void TakeDamage(float amount)
     {
@@ -125,6 +155,8 @@ public class BarrierDefender : MonoBehaviour, IDefendable
         if (isDestroyed) return;
         isDestroyed = true;
         Debug.Log($"Barrier at grid {gridPosition} destroyed.");
+
+        if (healthBarInstance != null) Destroy(healthBarInstance);
 
         var placementManager = FindFirstObjectByType<TurretPlacementManager>();
         if (placementManager != null)

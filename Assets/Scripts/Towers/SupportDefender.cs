@@ -5,10 +5,15 @@ using System.Linq;
 public class SupportDefender : MonoBehaviour, IDefendable
 {
     public float health { get; set; }
+    public float maxHealth { get; private set; } = 120f;
     public Vector3 transform_position => transform.position;
 
+    [Header("Health Bar")]
+    public GameObject healthBarPrefab;
+    private GameObject healthBarInstance;
+    public float healthBarYOffset = 2f;
+
     [Header("Support Defender Stats")]
-    public float maxHealth = 120f;
     public float energyRegenRate = 5f; // Energy regenerated per second
     public float maxEnergy = 100f; // Maximum energy capacity
     private float currentEnergy;
@@ -64,6 +69,7 @@ public class SupportDefender : MonoBehaviour, IDefendable
 
     private void Awake()
     {
+        maxHealth = 120f;
         health = maxHealth;
         currentEnergy = maxEnergy;
         supportRenderer = GetComponent<Renderer>();
@@ -71,6 +77,7 @@ public class SupportDefender : MonoBehaviour, IDefendable
         {
             originalMaterial = supportRenderer.material;
         }
+        CreateHealthBar();
     }
 
     private void Start()
@@ -96,7 +103,28 @@ public class SupportDefender : MonoBehaviour, IDefendable
 
     #region Health and Damage System
 
-    private void TakeDamage(float damage)
+    private void CreateHealthBar()
+    {
+        if (healthBarPrefab != null)
+        {
+            healthBarInstance = Instantiate(healthBarPrefab, transform);
+            healthBarInstance.transform.localPosition = Vector3.up * healthBarYOffset;
+            healthBarInstance.transform.localScale = Vector3.one;
+        }
+    }
+
+    private void UpdateHealthBar()
+    {
+        if (healthBarInstance == null) return;
+        Transform fillBar = healthBarInstance.transform.GetChild(0);
+        if (fillBar != null)
+        {
+            float healthPercent = health / maxHealth;
+            fillBar.localScale = new Vector3(healthPercent, 1f, 1f);
+        }
+    }
+
+    public void TakeDamage(float damage)
     {
         if (isDestroyed) return;
 
@@ -129,6 +157,8 @@ public class SupportDefender : MonoBehaviour, IDefendable
         if (isDestroyed) return;
         isDestroyed = true;
         ClearAllBuffs();
+
+        if (healthBarInstance != null) Destroy(healthBarInstance);
 
         var placementManager = FindFirstObjectByType<TurretPlacementManager>();
         if (placementManager != null)
@@ -440,11 +470,6 @@ public class SupportDefender : MonoBehaviour, IDefendable
         if (healingRangeIndicator != null) healingRangeIndicator.SetActive(false);
         if (buffRangeIndicator != null) buffRangeIndicator.SetActive(false);
         if (shieldRangeIndicator != null) shieldRangeIndicator.SetActive(false);
-    }
-
-    void IDefendable.TakeDamage(float damage)
-    {
-        TakeDamage(damage);
     }
     #endregion
 

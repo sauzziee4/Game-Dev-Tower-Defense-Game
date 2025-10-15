@@ -8,10 +8,16 @@ public class Tower : MonoBehaviour, IDefendable
     //IDefendable implementation
     public float health { get; set; }
 
-    public float maxHealth = 100f;
+    [SerializeField] private float _maxHealth = 100f; // Add backing field
+    public float maxHealth => _maxHealth;
 
     public Vector3 transform_position
     { get { return transform.position; } }
+
+    [Header("Health Bar")]
+    public GameObject healthBarPrefab;
+    private GameObject healthBarInstance;
+    public float healthBarYOffset = 2f;
 
     [Header("Defense System")]
     public float attackRange = 8f;
@@ -26,7 +32,9 @@ public class Tower : MonoBehaviour, IDefendable
     //adds and removes tower from defendableManager
     private void Awake()
     {
+        _maxHealth = 100f;
         health = maxHealth;
+        CreateHealthBar();
     }
     private void OnEnable()
     {
@@ -46,6 +54,7 @@ public class Tower : MonoBehaviour, IDefendable
 
     private void Update()
     {
+        UpdateHealthBar();
         if (Time.time >= nextFireTime)
         {
             //find closest enemy to attack
@@ -88,6 +97,26 @@ public class Tower : MonoBehaviour, IDefendable
         }
     }
 
+    private void CreateHealthBar()
+    {
+        if (healthBarPrefab != null)
+        {
+            healthBarInstance = Instantiate(healthBarPrefab, transform);
+            healthBarInstance.transform.localPosition = Vector3.up * healthBarYOffset;
+            healthBarInstance.transform.localScale = Vector3.one;
+        }
+    }
+
+    private void UpdateHealthBar()
+    {
+        if (healthBarInstance == null) return;
+        Transform fillBar = healthBarInstance.transform.GetChild(0);
+        if (fillBar != null)
+        {
+            float healthPercent = health / maxHealth;
+            fillBar.localScale = new Vector3(healthPercent, 1f, 1f);
+        }
+    }
     public void TakeDamage(float damage)
     {
         health -= damage;
@@ -96,6 +125,8 @@ public class Tower : MonoBehaviour, IDefendable
         if (health <= 0)
         {
             health = 0; //ensure does not go into negative
+
+            if (healthBarInstance != null) Destroy(healthBarInstance);
 
             // Trigger game over through GameManager
             if (GameManager.Instance != null)

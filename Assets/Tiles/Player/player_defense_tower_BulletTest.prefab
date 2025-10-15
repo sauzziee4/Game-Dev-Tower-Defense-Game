@@ -66,6 +66,7 @@ Transform:
   m_Children:
   - {fileID: 6977957049245171812}
   - {fileID: 6945474204586099821}
+  - {fileID: 5283083716490338396}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6062753204405724224
@@ -155,7 +156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6fa6979278b0c84c8a80d6b27ff2c61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  _maxHealth: 100
   attackRange: 5
   fireRate: 2
   damage: 10
@@ -165,6 +166,7 @@ MonoBehaviour:
   projectilePrefab: {fileID: 7673134771546271459, guid: 27f9a442736be25449b776fe23f9ccc7, type: 3}
   rangeIndicator: {fileID: 0}
   healthBarPrefab: {fileID: 0}
+  healthBarYOffset: 2
   upgradeLevel: 1
   upgradeCostMultiplier: 1.5
   upgradeStatMultiplier: 1.3
@@ -350,4 +352,66 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 2227042544199573814, guid: d339667844ab69c4595dc814e93bd391, type: 3}
   m_PrefabInstance: {fileID: 996934541081188982}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &4966243782989754915
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7867387815955983673}
+    m_Modifications:
+    - target: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5574301555601987300, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+      propertyPath: m_Name
+      value: WorldHealthBarBuilding
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+--- !u!4 &5283083716490338396 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 989363440773894783, guid: b0d3c0d059cf7054881fa3f821578c85, type: 3}
+  m_PrefabInstance: {fileID: 4966243782989754915}
   m_PrefabAsset: {fileID: 0}
