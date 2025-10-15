@@ -123,18 +123,18 @@ public class TurretPlacementUI : MonoBehaviour
             GameObject buttonObj = Instantiate(defenderButtonPrefab, defenderButtonContainer);
             Button button = buttonObj.GetComponent<Button>();
 
-            // Set button text
-            Text buttonText = buttonObj.GetComponentInChildren<Text>();
+            
+            TextMeshProUGUI buttonText = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
             if (buttonText != null)
             {
-                buttonText.text = $"{defenderTypes[i].name}\n${defenderTypes[i].cost}";
+                buttonText.text = $"{defenderTypes[i].name}";
                 buttonText.fontSize = 14;
-                buttonText.alignment = TextAnchor.MiddleCenter;
+                Debug.LogError("Buttons text have been changed");
             }
 
-            // Add click listener
-            int index = i; // Capture for closure
-            button.onClick.AddListener(() => placementManager.SelectDefenderType(index));
+            
+            int index = i; 
+            button.onClick.AddListener(() => OnDefenderSelected(index)); 
 
             defenderButtons[i] = button;
         }
@@ -144,7 +144,7 @@ public class TurretPlacementUI : MonoBehaviour
     {
         placementManager.SelectDefenderType(index);
         placementManager.ToggleTurretPlacement();
-        HideDefenderSelection();
+        
     }
     private void Update()
     {

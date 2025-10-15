@@ -104,12 +104,12 @@ public class DefenderType
 
         for(int i = 0; i <defenderTypes.Length && i < 9; i++)
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+            /*if (Input.GetKeyDown(KeyCode.Alpha1 + i))
             {
                 selectedDefenderIndex = i;
                 UpdatePlacementPreview();
                 Debug.Log($"Selected defender: {defenderTypes[selectedDefenderIndex].name}");
-            }
+            }*/
         }
     }
 

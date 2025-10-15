@@ -39,7 +39,7 @@ public class Enemy : MonoBehaviour, IDefendable
     private float nextAttackTime = 0f;
 
     [Header("Targeting")]
-    public float aggroRange = 10f; //how close defender must be to become a target
+    public float aggroRange = 0.2f; //how close defender must be to become a target
 
     private float targetCheckInterval = 0.5f; //how often to check for new targets
 
