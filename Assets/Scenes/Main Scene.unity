@@ -4736,14 +4736,14 @@ MonoBehaviour:
   maxDifficultyScore: 7
   difficultyCheckInterval: 3
   targetTowerHealthThreshold: 0.85
-  criticalTowerHealthThreshold: 0.4
-  highResourceThreshold: 200
-  lowResourceThreshold: 50
+  criticalTowerHealthThreshold: 0.1
+  highResourceThreshold: 300
+  lowResourceThreshold: 10
   minSpawnInterval: 0.3
   maxSpawnInterval: 5
   baseSpawnInterval: 3
-  enemiesPerWave: 30
-  timeBetweenWaves: 2
+  enemiesPerWave: 40
+  timeBetweenWaves: 1
   useWaveSystem: 1
   OnWaveStart:
     m_PersistentCalls:
@@ -4755,18 +4755,18 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   allowDefenderPlacementBetweenWaves: 1
-  wavePrepTime: 5
-  enemiesPerWaveGrowth: 5
+  wavePrepTime: 2
+  enemiesPerWaveGrowth: 20
   maxEnemiesPerWave: 60
-  spawnIntervalDecreaseRate: 0.95
-  minWaveSpawnInterval: 0.3
+  spawnIntervalDecreaseRate: 0.98
+  minWaveSpawnInterval: 0.2
   scaleEnemyHalthWithWaves: 1
   enemyHealthScaling: 2
   increaseEliteChance: 1
   bossWaveInterval: 3
   enableBossWave: 1
   eliteSpawnChance: 1
-  eliteSpawnInterval: 30
+  eliteSpawnInterval: 3
   enableDynamicSpawns: 1
   dynamicSpawnDistanceFromTower: 10
   enableDebugLogs: 1
