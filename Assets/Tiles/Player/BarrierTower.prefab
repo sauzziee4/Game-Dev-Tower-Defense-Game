@@ -194,7 +194,7 @@ MonoBehaviour:
   slowRadius: 3
   slowEffect: 0.5
   damageRadius: 3
-  damagePerSecond: 10
+  damagePerSecond: 5
   slowAreaIndicator: {fileID: 0}
   damageAreaIndicator: {fileID: 0}
   repairEffect: {fileID: 0}

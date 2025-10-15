@@ -244,46 +244,76 @@ public class Enemy : MonoBehaviour, IDefendable
     }
 
     private void FindBestTarget()
+{
+    IDefendable closestDefender = null;
+    float minDistance = Mathf.Infinity;
+
+    // Find all defendable objects in the scene
+    var turrets = FindObjectsByType<PlaceableTurret>(FindObjectsSortMode.None);
+    var barriers = FindObjectsByType<BarrierDefender>(FindObjectsSortMode.None);  
+    var supports = FindObjectsByType<SupportDefender>(FindObjectsSortMode.None);  
+    var tower = FindFirstObjectByType<Tower>();
+
+    // Check distance to PlaceableTurrets
+    foreach (var turret in turrets)
     {
-        IDefendable closestDefender = null;
-        float minDistance = Mathf.Infinity;
-
-        //find all turrets and tower
-        var turrets = FindObjectsByType<PlaceableTurret>(FindObjectsSortMode.None);
-        var tower = FindFirstObjectByType<Tower>();
-
-        //check distance to turrets
-        foreach (var turret in turrets)
+        if (turret.IsDestroyed) continue; // Skip destroyed turrets
+        
+        float distance = Vector3.Distance(transform.position, turret.transform.position);
+        if (distance < minDistance && distance <= aggroRange)
         {
-            float distance = Vector3.Distance(transform.position, turret.transform.position);
-            if (distance < minDistance && distance <= aggroRange)
-            {
-                minDistance = distance;
-                closestDefender = turret.GetComponent<IDefendable>();
-            }
-        }
-
-        //make sure tower variable is not empty
-        if (tower != null)
-        {
-            float distanceToTower = Vector3.Distance(transform.position, tower.transform.position);
-            if (distanceToTower < minDistance)
-            {
-                //if tower is closest defendable, it takes priority
-                closestDefender = tower;
-            }
-        }
-
-        //if defender found in range, target, otherwise deafult to central tower
-        if (closestDefender != null)
-        {
-            currentTarget = closestDefender;
-        }
-        else if (centralTowerTransform != null)
-        {
-            currentTarget = centralTowerTransform.GetComponent<IDefendable>();
+            minDistance = distance;
+            closestDefender = turret;
         }
     }
+
+    // Check distance to BarrierDefenders
+    foreach (var barrier in barriers)
+    {
+        if (barrier.IsDestroyed()) continue; // Skip destroyed barriers
+        
+        float distance = Vector3.Distance(transform.position, barrier.transform.position);
+        if (distance < minDistance && distance <= aggroRange)
+        {
+            minDistance = distance;
+            closestDefender = barrier;
+        }
+    }
+
+    // Check distance to SupportDefenders
+    foreach (var support in supports)
+    {
+        if (support.IsDestroyed) continue; // Skip destroyed supports
+        
+        float distance = Vector3.Distance(transform.position, support.transform.position);
+        if (distance < minDistance && distance <= aggroRange)
+        {
+            minDistance = distance;
+            closestDefender = support;
+        }
+    }
+
+    // Make sure tower variable is not empty
+    if (tower != null)
+    {
+        float distanceToTower = Vector3.Distance(transform.position, tower.transform.position);
+        if (distanceToTower < minDistance)
+        {
+            // If tower is closest defendable, it takes priority
+            closestDefender = tower;
+        }
+    }
+
+    // If defender found in range, target it, otherwise default to central tower
+    if (closestDefender != null)
+    {
+        currentTarget = closestDefender;
+    }
+    else if (centralTowerTransform != null)
+    {
+        currentTarget = centralTowerTransform.GetComponent<IDefendable>();
+    }
+}
 
     //inflicts damage on current target
     private void AttackTarget()

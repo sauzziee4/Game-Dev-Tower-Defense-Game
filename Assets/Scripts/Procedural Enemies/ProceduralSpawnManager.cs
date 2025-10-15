@@ -414,7 +414,7 @@ public class ProceduralSpawnManager : MonoBehaviour
         int miniEnemies = currentWaveEnemies / 2;
 
         if (enableDebugLogs)
-            Debug.LogWarning($"Spawning {bossCount} boss enemies with {miniEnemies} support enemies");
+            Debug.Log($"Spawning {bossCount} boss enemies with {miniEnemies} support enemies");
 
         for (int i = 0; i < miniEnemies && !GameManager.Instance.isGameOver; i++)
         {
@@ -922,9 +922,11 @@ public class ProceduralSpawnManager : MonoBehaviour
         {
             Debug.LogError("Could not find _maxHealth field in Enemy class!");
         }
-        
+
         // Slight speed increase for variety 
         enemy.speed *= 1f + (currentWave * 0.02f); // 2% faster per wave
+
+        enemy.resourceReward /= 0.5f;
         
         if (enableDebugLogs && isBoss)
             Debug.Log($"Boss scaled: Health={enemy.health:F0}, Damage={enemy.attackDamage:F0}");
