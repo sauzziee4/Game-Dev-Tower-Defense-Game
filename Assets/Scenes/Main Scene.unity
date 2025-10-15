@@ -5039,7 +5039,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -36989,8 +36989,8 @@ MonoBehaviour:
   resourceText: {fileID: 721086263547148952}
   instructionText: {fileID: 1436026420756168176}
   turretInfoPanel: {fileID: 0}
-  defenderSelectionPanel: {fileID: 0}
-  defenderButtonContainer: {fileID: 0}
+  defenderSelectionPanel: {fileID: 2072573171}
+  defenderButtonContainer: {fileID: 162146740}
   defenderButtonPrefab: {fileID: 2809747409697588741, guid: 40b3abba46d2bcb47b1968103ec9afaf, type: 3}
   turretDamageText: {fileID: 0}
   turretRangeText: {fileID: 0}
@@ -67265,7 +67265,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2072573172
 RectTransform:
   m_ObjectHideFlags: 0
@@ -67299,7 +67299,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.4528302, g: 0.4528302, b: 0.4528302, a: 0.392}
+  m_Color: {r: 0.4528302, g: 0.4528302, b: 0.4528302, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
