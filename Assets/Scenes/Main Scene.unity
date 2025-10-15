@@ -4739,7 +4739,7 @@ MonoBehaviour:
   criticalTowerHealthThreshold: 0.4
   highResourceThreshold: 200
   lowResourceThreshold: 50
-  minSpawnInterval: 0.5
+  minSpawnInterval: 0.3
   maxSpawnInterval: 5
   baseSpawnInterval: 3
   enemiesPerWave: 30
@@ -4756,7 +4756,16 @@ MonoBehaviour:
       m_Calls: []
   allowDefenderPlacementBetweenWaves: 1
   wavePrepTime: 5
-  eliteSpawnChance: 0.1
+  enemiesPerWaveGrowth: 5
+  maxEnemiesPerWave: 60
+  spawnIntervalDecreaseRate: 0.95
+  minWaveSpawnInterval: 0.3
+  scaleEnemyHalthWithWaves: 1
+  enemyHealthScaling: 2
+  increaseEliteChance: 1
+  bossWaveInterval: 3
+  enableBossWave: 1
+  eliteSpawnChance: 1
   eliteSpawnInterval: 30
   enableDynamicSpawns: 1
   dynamicSpawnDistanceFromTower: 10
@@ -73580,8 +73589,8 @@ MonoBehaviour:
   turretPrefab: {fileID: 3967922843619066559}
   turretCost: 50
   turretPlacementHeight: 0.1
-  validPlacementMaterial: {fileID: 2100000, guid: 9fa52e5fb735cbd43890292667ddb8e9, type: 2}
-  invalidPlacementMaterial: {fileID: 2100000, guid: 675bc6468fdbdbc428ede54892a57490, type: 2}
+  validPlacementMaterial: {fileID: 2100000, guid: 675bc6468fdbdbc428ede54892a57490, type: 2}
+  invalidPlacementMaterial: {fileID: 2100000, guid: 9fa52e5fb735cbd43890292667ddb8e9, type: 2}
   placementPreviewPrefab: {fileID: 1563264505}
   placeTurretButton: {fileID: 8712342458773912339}
   resourceText: {fileID: 721086263547148952}

@@ -45,8 +45,22 @@ public class ProceduralSpawnManager : MonoBehaviour
     [SerializeField] private bool allowDefenderPlacementBetweenWaves = true;
     [SerializeField] private float wavePrepTime = 5f;
 
+    [Header("Wave Progression System")]
+    [SerializeField] private float enemiesPerWaveGrowth = 1.2f;
+    [SerializeField] private int maxEnemiesPerWave = 30;
+    [SerializeField] private float spawnIntervalDecreaseRate = 0.95f;
+    [SerializeField] private float minWaveSpawnInterval = 0.8f;
+    [SerializeField] private bool scaleEnemyHalthWithWaves = true;
+    [SerializeField] private float enemyHealthScaling = 1.1f;
+    [SerializeField] private bool increaseEliteChance = true;
+    [SerializeField] private int bossWaveInterval = 5;
+    [SerializeField] private bool enableBossWave = true;
+
+    private float waveMultiplier = 1f;
+    private int currentWaveEnemies = 5; 
+
     [Header("Elite Enemy Settings")]
-    [SerializeField] private float eliteSpawnChance = 0.1f;
+    [SerializeField] private float eliteSpawnChance = 0.9f;
     [SerializeField] private float eliteSpawnInterval = 30f;
     private float nextEliteSpawnTime;
 
@@ -271,67 +285,109 @@ public class ProceduralSpawnManager : MonoBehaviour
     #region Wave Spawn System
 
     private IEnumerator WaveSpawnSystem()
+{
+    yield return new WaitForSeconds(2f);
+
+    while(!GameManager.Instance.isGameOver)
     {
-        yield return new WaitForSeconds(2f);
-
-        while (!GameManager.Instance.isGameOver)
+        // WAVE PREPARATION PHASE
+        currentWave++;
+        enemiesSpawnedThisWave = 0;
+        isWaveActive = false;
+        
+        // Calculate wave difficulty progression
+        CalculateWaveProgression();
+        
+        if (enableDebugLogs)
+            Debug.Log($"=== WAVE {currentWave} PREPARATION ===\n" +
+                     $"Enemies: {currentWaveEnemies}\n" +
+                     $"Spawn Interval: {currentSpawnInterval:F2}s\n" +
+                     $"Wave Multiplier: {waveMultiplier:F2}x\n" +
+                     $"Elite Chance: {eliteSpawnChance:F1%}");
+        
+        // Notify wave is coming (for UI updates)
+        OnWaveStart?.Invoke(currentWave);
+        
+        // Give player time to prepare
+        yield return new WaitForSeconds(wavePrepTime);
+        
+        // WAVE ACTIVE PHASE
+        isWaveActive = true;
+        
+        // Check if this is a boss wave
+        bool isBossWave = enableBossWave && (currentWave % bossWaveInterval == 0);
+        
+        if (isBossWave)
         {
-
-            currentWave++;
-            enemiesSpawnedThisWave = 0;
-            isWaveActive = false;
-
             if (enableDebugLogs)
-                Debug.Log($"Wave {currentWave} preparation phase - {wavePrepTime} seconds until start");
-
-            // Notify wave is coming (for UI updates)
-            OnWaveStart?.Invoke(currentWave);
-
-            // Give player time to prepare
-            yield return new WaitForSeconds(wavePrepTime);
-
-            // WAVE ACTIVE PHASE
-            isWaveActive = true;
-
+                Debug.Log($"🔥 BOSS WAVE {currentWave} STARTED! 🔥");
+            
+            yield return StartCoroutine(SpawnBossWave());
+        }
+        else
+        {
             if (enableDebugLogs)
-                Debug.Log($"Wave {currentWave} STARTED - Spawning {enemiesPerWave} enemies");
+                Debug.Log($"⚔️ Wave {currentWave} STARTED - Spawning {currentWaveEnemies} enemies");
 
             // Spawn all enemies in the wave
-            while (enemiesSpawnedThisWave < enemiesPerWave && !GameManager.Instance.isGameOver)
+            while (enemiesSpawnedThisWave < currentWaveEnemies && !GameManager.Instance.isGameOver)
             {
                 if (!GameManager.Instance.isPaused)
                 {
                     SpawnEnemy();
                     totalEnemiesSpawned++;
                     enemiesSpawnedThisWave++;
-
+                    
                     // Notify progress
-                    OnWaveProgress?.Invoke(enemiesSpawnedThisWave, enemiesPerWave);
+                    OnWaveProgress?.Invoke(enemiesSpawnedThisWave, currentWaveEnemies);
                 }
 
                 yield return new WaitForSeconds(currentSpawnInterval);
             }
-
-            // WAVE COMPLETE PHASE
-            isWaveActive = false;
-
-            if (enableDebugLogs)
-                Debug.Log($"Wave {currentWave} spawning complete. Waiting for enemies to be cleared...");
-
-            // Wait for all enemies from this wave to be defeated before starting cooldown
-            yield return StartCoroutine(WaitForWaveCleanup());
-
-            if (enableDebugLogs)
-                Debug.Log($"Wave {currentWave} COMPLETE. Next wave in {timeBetweenWaves} seconds");
-
-            // Notify wave complete
-            OnWaveComplete?.Invoke(currentWave);
-
-            // Cooldown between waves
-            yield return new WaitForSeconds(timeBetweenWaves);
         }
+
+        // WAVE COMPLETE PHASE
+        isWaveActive = false;
+        
+        if (enableDebugLogs)
+            Debug.Log($"Wave {currentWave} spawning complete. Waiting for enemies to be cleared...");
+        
+        // Wait for all enemies from this wave to be defeated before starting cooldown
+        yield return StartCoroutine(WaitForWaveCleanup());
+        
+        if (enableDebugLogs)
+            Debug.Log($"✅ Wave {currentWave} COMPLETE! Next wave in {timeBetweenWaves} seconds");
+        
+        // Notify wave complete
+        OnWaveComplete?.Invoke(currentWave);
+
+        // Cooldown between waves
+        yield return new WaitForSeconds(timeBetweenWaves);
     }
-    
+}
+    private void CalculateWaveProgression()
+    {
+        // Calculate wave multiplier (affects all aspects)
+        waveMultiplier = 1f + (currentWave - 1) * 0.15f; // 15% increase per wave
+        
+        // Increase number of enemies per wave
+        currentWaveEnemies = Mathf.RoundToInt(enemiesPerWave * Mathf.Pow(enemiesPerWaveGrowth, currentWave - 1));
+        currentWaveEnemies = Mathf.Min(currentWaveEnemies, maxEnemiesPerWave);
+        
+        // Decrease spawn interval (spawn faster)
+        currentSpawnInterval = baseSpawnInterval * Mathf.Pow(spawnIntervalDecreaseRate, currentWave - 1);
+        currentSpawnInterval = Mathf.Max(currentSpawnInterval, minWaveSpawnInterval);
+        
+        // Increase elite spawn chance
+        if (increaseEliteChance)
+        {
+            eliteSpawnChance = Mathf.Min(0.1f + (eliteSpawnChance * currentWave), 0.5f); // Cap at 50%
+        }
+        
+        // Scale difficulty score with wave progression
+        currentDifficultyScore = baseDifficultyScore + (currentWave * 0.2f);
+        currentDifficultyScore = Mathf.Min(currentDifficultyScore, maxDifficultyScore);
+    }
     private IEnumerator WaitForWaveCleanup()
     {
         float timeout = 60f;
@@ -342,12 +398,62 @@ public class ProceduralSpawnManager : MonoBehaviour
             elapsed += Time.deltaTime;
             yield return null;
         }
-        
-        if(elapsed >= timeout && enableDebugLogs)
+
+        if (elapsed >= timeout && enableDebugLogs)
         {
             Debug.LogWarning($"Wave cleanup timeout - {Enemy.allEnemies.Count} enemies still active");
         }
     }
+    #endregion
+
+    #region Boss Wave System
+
+    private IEnumerator SpawnBossWave()
+    {
+        int bossCount = Mathf.Max(2, currentWave / bossWaveInterval);
+        int miniEnemies = currentWaveEnemies / 2;
+
+        if (enableDebugLogs)
+            Debug.LogWarning($"Spawning {bossCount} boss enemies with {miniEnemies} support enemies");
+
+        for (int i = 0; i < miniEnemies && !GameManager.Instance.isGameOver; i++)
+        {
+            if (!GameManager.Instance.isPaused)
+            {
+                SpawnEnemy();
+                totalEnemiesSpawned++;
+                enemiesSpawnedThisWave++;
+                OnWaveProgress?.Invoke(enemiesSpawnedThisWave, currentWaveEnemies);
+            }
+
+            yield return new WaitForSeconds(currentSpawnInterval * 0.5f);
+        }
+
+        yield return new WaitForSeconds(2f);
+
+        for (int i = 0; i < bossCount && !GameManager.Instance.isGameOver; i++)
+        {
+            if (!GameManager.Instance.isPaused)
+            {
+                SpawnBossEnemy();
+                totalEnemiesSpawned++;
+                enemiesSpawnedThisWave++;
+                OnWaveProgress?.Invoke(enemiesSpawnedThisWave, currentWaveEnemies);
+            }
+            yield return new WaitForSeconds(2f);
+        }
+    }
+    
+    private void SpawnBossEnemy()
+    {
+        Vector2Int spawnLocation = SelectSpawnLocation();
+
+        EnemyType enemyType = EnemyType.Hard;
+
+        SpawnEnemyAtLocation(spawnLocation, enemyType, isBoss: true);
+        UpdateSpawnTracking(spawnLocation, enemyType);
+    }
+
     #endregion
 
     #region Enemy Spawning
@@ -534,45 +640,68 @@ public class ProceduralSpawnManager : MonoBehaviour
     }
 
     private Dictionary<EnemyType, float> CalculateEnemyTypeWeights()
+{
+    Dictionary<EnemyType, float> weights = new Dictionary<EnemyType, float>();
+    
+    // Base weights shift based on both difficulty AND wave number
+    float waveProgress = (float)currentWave / 10f; // Normalize wave progression
+    
+    if (currentWave <= 3)
     {
-        Dictionary<EnemyType, float> weights = new Dictionary<EnemyType, float>();
-        
-        // Base weights adjusted by difficulty
-        if (currentDifficultyScore < 1.5f)
-        {
-            // Early game - mostly easy enemies
-            weights[EnemyType.Easy] = 3f;
-            weights[EnemyType.Medium] = 1f;
-            weights[EnemyType.Hard] = 0.2f;
-        }
-        else if (currentDifficultyScore < 3f)
-        {
-            // Mid game - balanced mix
-            weights[EnemyType.Easy] = 2f;
-            weights[EnemyType.Medium] = 2f;
-            weights[EnemyType.Hard] = 1f;
-        }
-        else
-        {
-            // Late game - harder enemies
-            weights[EnemyType.Easy] = 1f;
-            weights[EnemyType.Medium] = 2f;
-            weights[EnemyType.Hard] = 2.5f;
-        }
-        
-        // Reduce weight for recently spawned types (variety)
-        foreach (EnemyType recentType in recentlySpawnedTypes)
-        {
-            if (weights.ContainsKey(recentType))
-            {
-                weights[recentType] *= 0.7f;
-            }
-        }
-        
-        return weights;
+        // Early waves - mostly easy
+        weights[EnemyType.Easy] = 4f;
+        weights[EnemyType.Medium] = 1f;
+        weights[EnemyType.Hard] = 0.1f;
+    }
+    else if (currentWave <= 7)
+    {
+        // Mid-early waves - introducing medium
+        weights[EnemyType.Easy] = 3f;
+        weights[EnemyType.Medium] = 2f;
+        weights[EnemyType.Hard] = 0.5f;
+    }
+    else if (currentWave <= 12)
+    {
+        // Mid waves - balanced with more challenge
+        weights[EnemyType.Easy] = 2f;
+        weights[EnemyType.Medium] = 3f;
+        weights[EnemyType.Hard] = 1.5f;
+    }
+    else if (currentWave <= 20)
+    {
+        // Late waves - harder enemies dominate
+        weights[EnemyType.Easy] = 1f;
+        weights[EnemyType.Medium] = 2f;
+        weights[EnemyType.Hard] = 3f;
+    }
+    else
+    {
+        // End game - mostly hard
+        weights[EnemyType.Easy] = 0.5f;
+        weights[EnemyType.Medium] = 1.5f;
+        weights[EnemyType.Hard] = 4f;
     }
     
-    private void SpawnEnemyAtLocation(Vector2Int spawnCoord, EnemyType enemyType)
+    // Further adjust by current difficulty score
+    if (currentDifficultyScore > 3f)
+    {
+        weights[EnemyType.Hard] *= 1.5f;
+        weights[EnemyType.Easy] *= 0.5f;
+    }
+    
+    // Reduce weight for recently spawned types (variety)
+    foreach (EnemyType recentType in recentlySpawnedTypes)
+    {
+        if (weights.ContainsKey(recentType))
+        {
+            weights[recentType] *= 0.7f;
+        }
+    }
+    
+    return weights;
+}
+
+    private void SpawnEnemyAtLocation(Vector2Int spawnCoord, EnemyType enemyType, bool isBoss = false)
     {
         GameObject spawnTile = hexGridGenerator.GetTileAt(spawnCoord);
         if (spawnTile == null)
@@ -580,23 +709,34 @@ public class ProceduralSpawnManager : MonoBehaviour
             Debug.LogError($"No tile found at {spawnCoord}");
             return;
         }
-        
-        // Get the appropriate prefab based on enemy type
+
         GameObject prefab = GetEnemyPrefabForType(enemyType);
         if (prefab == null)
         {
             Debug.LogError($"No prefab found for enemy type {enemyType}");
             return;
         }
-        
+
         Vector3 spawnPos = spawnTile.transform.position + Vector3.up * 0.5f;
-        
+
         if (UnityEngine.AI.NavMesh.SamplePosition(spawnPos, out UnityEngine.AI.NavMeshHit hit, 2.0f, UnityEngine.AI.NavMesh.AllAreas))
         {
             GameObject newEnemy = Instantiate(prefab, hit.position, Quaternion.identity);
-            
+
+            // Scale enemy with wave progression
+            Enemy enemyComponent = newEnemy.GetComponent<Enemy>();
+            if (enemyComponent != null && scaleEnemyHalthWithWaves)
+            {
+                ScaleEnemyForWave(enemyComponent, isBoss);
+            }
+
             if (enableDebugLogs)
-                Debug.Log($"Spawned {enemyType} enemy at {spawnCoord} (Difficulty: {currentDifficultyScore:F2})");
+            {
+                string bossLabel = isBoss ? "BOSS" : "";
+                Debug.LogWarning($"Spawned {enemyType}{bossLabel} at {spawnCoord} " +
+                         $"(Wave {currentWave}, Difficulty: {currentDifficultyScore:F2}, " +
+                         $"Health: {enemyComponent?.health:F0})");
+            }
         }
     }
     
@@ -673,17 +813,17 @@ public class ProceduralSpawnManager : MonoBehaviour
             Debug.Log($"Difficulty adjusted - Score: {currentDifficultyScore:F2}, Performance: {performanceScore:F2}, Spawn Interval: {currentSpawnInterval:F2}s");
         }
     }
-    
+
     private float CalculatePerformanceScore()
     {
         float score = 0f;
         int factors = 0;
-        
+
         // Factor 1: Tower health (40% weight)
         if (centralTower != null)
         {
             float healthRatio = centralTower.health / centralTower.maxHealth;
-            
+
             if (healthRatio >= targetTowerHealthThreshold)
             {
                 score += 0.9f * 0.4f;
@@ -694,19 +834,19 @@ public class ProceduralSpawnManager : MonoBehaviour
             }
             else
             {
-                score += (healthRatio - criticalTowerHealthThreshold) / 
+                score += (healthRatio - criticalTowerHealthThreshold) /
                          (targetTowerHealthThreshold - criticalTowerHealthThreshold) * 0.4f;
             }
             factors++;
         }
-        
+
         // Factor 2: Resource accumulation (30% weight)
         if (turretPlacementManager != null)
         {
             float currentResources = turretPlacementManager.PlayerResources;
             resournceAccumulationRate = (currentResources - lastResourceCount) / difficultyCheckInterval;
             lastResourceCount = currentResources;
-            
+
             if (currentResources >= highResourceThreshold)
             {
                 score += 0.9f * 0.3f;
@@ -717,24 +857,77 @@ public class ProceduralSpawnManager : MonoBehaviour
             }
             else
             {
-                score += ((currentResources - lowResourceThreshold) / 
+                score += ((currentResources - lowResourceThreshold) /
                          (highResourceThreshold - lowResourceThreshold)) * 0.3f;
             }
             factors++;
         }
-        
+
         // Factor 3: Enemy elimination efficiency (30% weight)
         int activeEnemies = Enemy.allEnemies.Count;
         totalEnemiesKilled = totalEnemiesSpawned - activeEnemies;
-        
+
         if (totalEnemiesSpawned > 0)
         {
             float eliminationRate = (float)totalEnemiesKilled / totalEnemiesSpawned;
             score += eliminationRate * 0.3f;
             factors++;
         }
-        
+
         return factors > 0 ? score : 0.5f;
+    }
+    
+    private void ScaleEnemyForWave(Enemy enemy, bool isBoss)
+    {
+        if (enemy == null) return;
+        
+        // Calculate scaling based on wave number
+        float healthMultiplier = Mathf.Pow(enemyHealthScaling, currentWave - 1);
+        
+        // Boss enemies get extra scaling
+        if (isBoss)
+        {
+            healthMultiplier *= 7f; // Bosses have 3x more health
+            enemy.attackDamage *= 1.5f; // Bosses deal more damage
+            
+            // Visual indicator for boss
+            Transform visualTransform = enemy.transform;
+            visualTransform.localScale *= 2f; // Make bosses bigger
+            
+            
+            Renderer renderer = enemy.GetComponent<Renderer>();
+            if (renderer == null)
+                renderer = enemy.GetComponentInChildren<Renderer>();
+            
+            if (renderer != null && renderer.material != null)
+            {
+                renderer.material.color = Color.Lerp(renderer.material.color, Color.red, 0.5f);
+            }
+        }
+        
+        
+        var maxHealthField = typeof(Enemy).GetField("_maxHealth", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        if (maxHealthField != null)
+        {
+            float currentMaxHealth = enemy.maxHealth;
+            float scaledMaxHealth = currentMaxHealth * healthMultiplier;
+            maxHealthField.SetValue(enemy, scaledMaxHealth);
+            
+            // Set current health to the new scaled max health
+            enemy.health = scaledMaxHealth;
+        }
+        else
+        {
+            Debug.LogError("Could not find _maxHealth field in Enemy class!");
+        }
+        
+        // Slight speed increase for variety 
+        enemy.speed *= 1f + (currentWave * 0.02f); // 2% faster per wave
+        
+        if (enableDebugLogs && isBoss)
+            Debug.Log($"Boss scaled: Health={enemy.health:F0}, Damage={enemy.attackDamage:F0}");
     }
     
     #endregion

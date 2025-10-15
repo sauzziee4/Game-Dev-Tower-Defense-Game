@@ -109,7 +109,7 @@ MonoBehaviour:
   maxEnergy: 100
   healRange: 6
   healingRate: 4
-  healCost: 2
+  healCost: 50
   buffRange: 4
   damageBuffMultiplier: 1.3
   attackSpeedBuffMultiplier: 1.2
