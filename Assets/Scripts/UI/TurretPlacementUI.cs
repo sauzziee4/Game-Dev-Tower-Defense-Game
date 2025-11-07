@@ -239,7 +239,7 @@ public class TurretPlacementUI : MonoBehaviour
     {
         if (resourceText != null && placementManager != null)
         {
-            resourceText.text = $"Resources: {placementManager.PlayerResources:F0}";
+            resourceText.text = $"  : {placementManager.PlayerResources:F0}";
         }
     }
 
@@ -300,17 +300,17 @@ public class TurretPlacementUI : MonoBehaviour
 
         if (turretDamageText != null)
         {
-            turretDamageText.text = $"Damage: {selectedTurret.damage:F1}";
+            turretDamageText.text = $"{selectedTurret.damage:F1}";
         }
 
         if (turretRangeText != null)
         {
-            turretRangeText.text = $"Range: {selectedTurret.attackRange:F1}";
+            turretRangeText.text = $"{selectedTurret.attackRange:F1}";
         }
 
         if (turretFireRateText != null)
         {
-            turretFireRateText.text = $"Fire Rate: {selectedTurret.fireRate:F1}/s";
+            turretFireRateText.text = $"{selectedTurret.fireRate:F1}/s";
         }
 
         if (upgradeCostText != null)
