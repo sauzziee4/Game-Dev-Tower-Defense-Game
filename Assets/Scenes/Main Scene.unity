@@ -44525,7 +44525,7 @@ MonoBehaviour:
   healthBarYOffset: 2
   attackRange: 5
   fireRate: 1
-  projectilePrefab: {fileID: 3722865764368831054, guid: 4558bb6004690994f856875b3baab762, type: 3}
+  projectilePrefab: {fileID: 8859415543179368637, guid: b63024363778aad4594fd21990281332, type: 3}
   projectileSpawnPoint: {fileID: 1884960403}
   projectileSpeed: 3
   projectileDamage: 5
