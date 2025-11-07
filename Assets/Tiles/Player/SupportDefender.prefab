@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5907504361308048640}
   - component: {fileID: 7755235519092666373}
   - component: {fileID: 1525308726032076252}
+  - component: {fileID: 6014959776572441582}
   m_Layer: 0
   m_Name: SupportDefender
   m_TagString: Untagged
@@ -120,6 +121,9 @@ MonoBehaviour:
   shieldCoolDown: 10
   shieldEnergyCost: 40
   lastShieldTime: 0
+  upgradeLevel: 1
+  upgradeCostMultiplier: 1.5
+  upgradeStatsMultiplier: 1.3
   healingRangeIndicator: {fileID: 0}
   buffRangeIndicator: {fileID: 0}
   shieldRangeIndicator: {fileID: 0}
@@ -127,6 +131,27 @@ MonoBehaviour:
   shieldEffect: {fileID: 4816154325997428525}
   buffEffect: {fileID: 287288455634453574}
   lowEnergyMaterial: {fileID: 2100000, guid: ac527ddf56a9e5a41be47098ccb56087, type: 2}
+--- !u!65 &6014959776572441582
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7014804762202524817}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.440005, y: 1.6400526, z: 1.5660753}
+  m_Center: {x: -0.00000011920929, y: 0.82002616, z: 0.06303522}
 --- !u!1001 &644731473220456699
 PrefabInstance:
   m_ObjectHideFlags: 0
