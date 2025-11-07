@@ -1,12 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 
 /// <summary>
 /// A defensive barrier structure that provides area denial through slowing and damaging enemies.
 /// Features self-repair capabilities and visual feedback systems.
 /// </summary>
-public class BarrierDefender : MonoBehaviour, IDefendable
+public class BarrierDefender : MonoBehaviour, IDefendable, IUpgradeable
 {
     public float health { get; set; } 
     public float maxHealth { get; private set; } = 200f;
@@ -27,6 +28,12 @@ public class BarrierDefender : MonoBehaviour, IDefendable
     public float damageRadius = 1.5f;
     public float damagePerSecond = 10f;
 
+    [Header("Upgrade Settings")]
+    public int upgradeLevel = 1;
+    public float upgradeCostMultiplier = 1.5f;
+    public float upgradeStatsMultiplier = 1.3f;
+    private float baseCost = 60f; 
+
     [Header("Visual Effects")]
     public GameObject slowAreaIndicator;
     public GameObject damageAreaIndicator;
@@ -40,6 +47,14 @@ public class BarrierDefender : MonoBehaviour, IDefendable
     private List<Enemy> affectedEnemies = new List<Enemy>();
     private Renderer barrierRenderer;
     private Material originalMaterial;
+    private Color origionalColour;
+
+    private float initialRepairRate;
+    private float initialSlowRadius;
+    private float initialSlowEffect;
+    private float initialDamageRadius;
+    private float initialDamagePerSecond;
+    private float initialMaxHealth;
 
     #region Unity Functions
 
@@ -82,6 +97,13 @@ public class BarrierDefender : MonoBehaviour, IDefendable
         {
             originalMaterial = barrierRenderer.material;
         }
+
+        initialRepairRate = repairRate;
+        initialSlowRadius = slowRadius;
+        initialSlowEffect = slowEffect;
+        initialDamageRadius = damageRadius;
+        initialDamagePerSecond = damagePerSecond;
+        initialMaxHealth = maxHealth;
     }
 
     
@@ -351,10 +373,10 @@ public class BarrierDefender : MonoBehaviour, IDefendable
         }
     }
 
-    
+
     // Updates the visual appearance of the barrier based on health status.
     // Changes material and scale to indicate damage level.
-    
+
     private void UpdateVisualState()
     {
         if (barrierRenderer == null) return;
@@ -369,9 +391,9 @@ public class BarrierDefender : MonoBehaviour, IDefendable
         {
             barrierRenderer.material = originalMaterial;
         }
-        
+
         // Shrink the barrier when health is critically low (below 30%)
-        if(healthPercent <= 0.3f)
+        if (healthPercent <= 0.3f)
         {
             transform.localScale = Vector3.one * (0.9f + healthPercent * 0.1f);
         }
@@ -379,6 +401,65 @@ public class BarrierDefender : MonoBehaviour, IDefendable
         {
             transform.localScale = Vector3.one;
         }
+    }
+
+    #endregion
+
+    #region Upgrade System
+
+    public int UpgradeLevel => upgradeLevel;
+
+    public float GetUpgradeCost()
+    {
+        var placementManager = Object.FindFirstObjectByType<TurretPlacementManager>();
+        if (placementManager != null)
+        {
+            return baseCost * Mathf.Pow(upgradeCostMultiplier, upgradeLevel - 1);
+        }
+
+        return 100f;
+    }
+
+    public void UpgradeTower()
+    {
+        if (isDestroyed) return;
+
+        var placementManager = Object.FindFirstObjectByType<TurretPlacementManager>();
+        float upgradeCost = GetUpgradeCost();
+
+        if (placementManager != null && placementManager.DeductResources(upgradeCost))
+        {
+            upgradeLevel++;
+            repairRate *= upgradeStatsMultiplier;
+            slowRadius *= upgradeStatsMultiplier;
+            slowEffect = Mathf.Max(slowEffect * upgradeStatsMultiplier, 0.1f);
+            damageRadius *= 1.1f;
+            damagePerSecond *= upgradeStatsMultiplier;
+
+            maxHealth *= upgradeStatsMultiplier;
+            health = maxHealth;
+
+            if (barrierRenderer != null)
+            {
+                barrierRenderer.material.color = origionalColour;
+                transform.localScale = Vector3.one * Mathf.Pow(1.05f, upgradeLevel - 1);
+            }
+
+            if (slowAreaIndicator != null)
+            {
+                float slowDiameter = slowRadius * 2f;
+                slowAreaIndicator.transform.localScale = new Vector3(slowDiameter, 0.01f, slowDiameter);
+            }
+
+            if (damageAreaIndicator != null)
+            {
+                float damageDiameter = damageRadius * 2f;
+                damageAreaIndicator.transform.localScale = new Vector3(damageDiameter, 0.01f, damageDiameter);
+            }
+
+            Debug.Log($"Barrier Upgrade to level {upgradeLevel}");
+        }
+        
     }
 
     #endregion

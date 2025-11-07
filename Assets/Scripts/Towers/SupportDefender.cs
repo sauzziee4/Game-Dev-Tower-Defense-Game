@@ -6,7 +6,7 @@ using System.Linq;
 /// A support tower that provides healing, buffs, and shield abilities to nearby defensive structures.
 /// Uses an energy system to manage ability usage and prevent infinite support capabilities.
 /// </summary>
-public class SupportDefender : MonoBehaviour, IDefendable
+public class SupportDefender : MonoBehaviour, IDefendable, IUpgradeable
 {
     // IDefendable interface implementation
     public float health { get; set; }
@@ -39,8 +39,14 @@ public class SupportDefender : MonoBehaviour, IDefendable
     public float shieldStrength = 25f; // Amount of damage the shield can absorb
     public float shieldDuration = 6f; 
     public float shieldCoolDown = 20f; 
-    public float shieldEnergyCost = 40f; 
+    public float shieldEnergyCost = 40f;
     public float lastShieldTime = 0f; // Last time the shield was activated (for cooldown tracking)
+
+    [Header("Upgrade Settings")]
+    public int upgradeLevel = 1;
+    public float upgradeCostMultiplier = 1.5f;
+    public float upgradeStatsMultiplier = 1.3f;
+    private float baseCost = 70f; 
 
     [Header("Visual Effects")]
     public GameObject healingRangeIndicator; 
@@ -56,8 +62,18 @@ public class SupportDefender : MonoBehaviour, IDefendable
     private bool isDestroyed = false; 
     private List<IDefendable> buffedDefenders = new List<IDefendable>(); // List of currently buffed defenders
     private Dictionary<IDefendable, float> defenderShields = new Dictionary<IDefendable, float>(); // Active shields and their remaining strength
-    private Renderer supportRenderer; 
-    private Material originalMaterial; 
+    private Renderer supportRenderer;
+    private Material originalMaterial;
+    private Color origionalColour;
+    
+    private float initialRegenEnergyRate;
+    private float initialHealRange;
+    private float initialHealingRate;
+    private float initialBuffRange;
+    private float initialShieldRange;
+    private float initialShieldStrength;
+    private float initialMaxHealth;
+
 
     #region Unity Functions
     // Called when the object becomes enabled and active. Registers this support tower with the DefendableManager.
@@ -86,6 +102,14 @@ public class SupportDefender : MonoBehaviour, IDefendable
             originalMaterial = supportRenderer.material;
         }
         CreateHealthBar();
+
+        initialRegenEnergyRate = energyRegenRate;
+        initialHealRange = healRange;
+        initialHealingRate = healingRate;
+        initialBuffRange = buffRange;
+        initialShieldRange = shieldRange;
+        initialShieldStrength = shieldStrength;
+        initialMaxHealth = maxHealth;
     }
 
 
@@ -522,6 +546,67 @@ public class SupportDefender : MonoBehaviour, IDefendable
         }
     }
     #endregion
+
+    public int UpgradeLevel => upgradeLevel;
+
+    public float GetUpgradeCost()
+    {
+        var placementManager = Object.FindFirstObjectByType<TurretPlacementManager>();
+        if (placementManager != null)
+        {
+            return baseCost * Mathf.Pow(upgradeCostMultiplier, upgradeLevel - 1);
+        }
+
+        return 100f;
+    }
+
+    public void UpgradeTower()
+    {
+        if (isDestroyed) return;
+
+        var placementManager = Object.FindFirstObjectByType<TurretPlacementManager>();
+        float upgradeCost = GetUpgradeCost();
+        if(placementManager != null && placementManager.DeductResources(upgradeCost))
+        {
+            upgradeLevel++;
+            energyRegenRate *= upgradeStatsMultiplier;
+            maxEnergy *= upgradeStatsMultiplier;
+            healRange *= upgradeStatsMultiplier;
+            healingRate *= upgradeStatsMultiplier;
+            buffRange *= 1.1f;
+            shieldRange *= 1.1f;
+            shieldStrength *= upgradeStatsMultiplier;
+
+            maxHealth *= upgradeStatsMultiplier;
+            health = maxHealth;
+
+            if (supportRenderer != null)
+            {
+                supportRenderer.material.color = origionalColour;
+                transform.localScale = Vector3.one * Mathf.Pow(1.05f, upgradeLevel - 1);
+            }
+
+            if (healingRangeIndicator != null)
+            {
+                float healingDiameter = healRange * 2f;
+                healingRangeIndicator.transform.localScale = new Vector3(healingDiameter, 0.01f, healingDiameter);
+            }
+
+            if (buffRangeIndicator != null)
+            {
+                float buffDiamter = buffRange * 2f;
+                buffRangeIndicator.transform.localScale = new Vector3(buffDiamter, 0.01f, buffDiamter);
+            }
+
+            if (shieldRangeIndicator != null)
+            {
+                float shieldDiameter = shieldRange * 2f;
+                shieldRangeIndicator.transform.localScale = new Vector3(shieldDiameter, 0.01f, shieldDiameter);
+            }
+
+            Debug.Log($"Support Tower upgraded to {upgradeLevel}");
+        }
+    }
 
     #region Mouse Interaction
     // Called when mouse hovers over the support tower. Shows all range indicators.

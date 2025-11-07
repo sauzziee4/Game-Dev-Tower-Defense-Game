@@ -4,7 +4,7 @@ using System.Linq;
 
 //This class handles the turrets that the player is able to place within the game on the hex grid. 
 //it handles the combat, health, upgrades, visual feedback and the management of resources. 
-public class PlaceableTurret : MonoBehaviour, IDefendable
+public class PlaceableTurret : MonoBehaviour, IDefendable, IUpgradeable
 {
     //implements IDefendable
     public float health { get; set; }
@@ -37,6 +37,7 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
     public int upgradeLevel = 1;
     public float upgradeCostMultiplier = 1.5f;
     public float upgradeStatMultiplier = 1.3f;
+    private float baseCost = 50f;
 
     private float nextFireTime = 0f;
     private Enemy currentTarget;
@@ -303,9 +304,8 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
 
     #endregion
 
-    #region Upgrade System for future parts 
+    #region Upgrade System
     // Upgrade system
-    // This system has not been fully implemented due to the time limit 
     public float GetUpgradeCost()
     {
         var placementManager = Object.FindFirstObjectByType<TurretPlacementManager>();
@@ -317,7 +317,7 @@ public class PlaceableTurret : MonoBehaviour, IDefendable
         return 100f; // Default cost
     }
 
-    public void UpgradeTurret()
+    public void UpgradeTower()
     {
         if (isDestroyed) return;
 

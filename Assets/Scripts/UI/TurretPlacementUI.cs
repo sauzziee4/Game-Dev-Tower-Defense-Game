@@ -15,16 +15,20 @@ public class TurretPlacementUI : MonoBehaviour
     public Transform defenderButtonContainer; // Container for defender type buttons
     public GameObject defenderButtonPrefab; // Prefab for defender selection buttons
 
-    [Header("Turret Info")]
-    public TextMeshProUGUI turretDamageText;
-    public TextMeshProUGUI turretRangeText;
-    public TextMeshProUGUI turretFireRateText;
-    public UnityEngine.UI.Button upgradeTurretButton;
-    public UnityEngine.UI.Button sellTurretButton;
-    public Text upgradeCostText;
+    [Header("Tower Info")]
+    public TextMeshProUGUI towerNameText;
+    public TextMeshProUGUI towerDamageText;
+    public TextMeshProUGUI towerRangeText;
+    public TextMeshProUGUI towerFireRateText;
+    public TextMeshProUGUI towerUpgradeLevelText;
+    public TextMeshProUGUI towerStatsText;
+    public UnityEngine.UI.Button upgradeTowerButton;
+    public UnityEngine.UI.Button sellTowerButton;
+    public TextMeshProUGUI upgradeCostText;
 
     private TurretPlacementManager placementManager;
-    private PlaceableTurret selectedTurret;
+    private IUpgradeable selectedUpgradeable;
+    private MonoBehaviour selectedTower;
     private Button[] defenderButtons; // Array to track defender selection buttons
     private bool defenderSelectionVisible = false;
 
@@ -42,14 +46,14 @@ public class TurretPlacementUI : MonoBehaviour
             defenderSelectionPanel.SetActive(false);
         }
         // Setup button listeners
-        if (upgradeTurretButton != null)
+        if (upgradeTowerButton != null)
         {
-            upgradeTurretButton.onClick.AddListener(UpgradeSelectedTurret);
+            upgradeTowerButton.onClick.AddListener(UpgradeSelectedTower);
         }
 
-        if (sellTurretButton != null)
+        if (sellTowerButton != null)
         {
-            sellTurretButton.onClick.AddListener(SellSelectedTurret);
+            sellTowerButton.onClick.AddListener(SellSelectedTower);
         }
 
         if(placeTurretButton != null)
@@ -129,7 +133,6 @@ public class TurretPlacementUI : MonoBehaviour
             {
                 buttonText.text = $"{defenderTypes[i].name}";
                 buttonText.fontSize = 14;
-                Debug.LogError("Buttons text have been changed");
             }
 
             
@@ -146,6 +149,7 @@ public class TurretPlacementUI : MonoBehaviour
         placementManager.ToggleTurretPlacement();
         
     }
+
     private void Update()
     {
         UpdateInstructionText();
@@ -156,16 +160,16 @@ public class TurretPlacementUI : MonoBehaviour
             UpdateDefenderButtons();
         }
 
-        // Handle right-click input for turret selection/deselection
+        // Handle right-click input for tower selection/deselection
         if (Input.GetMouseButtonDown(1) && !placementManager.IsPlacingTurret)
         {
-            if (selectedTurret != null)
+            if (selectedTower != null)
             {
-                DeselectTurret();
+                DeselectTower();
             }
             else
             {
-                SelectTurretAtMousePosition();
+                SelectTowerAtMousePosition();
             }
         }
     }
@@ -222,14 +226,14 @@ public class TurretPlacementUI : MonoBehaviour
             instructionText.text = $"Placing: {selectedDefender.name}\nCost: {selectedDefender.cost}\nLeft Click to place\nRight Click or Esc to cancel";
             instructionText.color = Color.yellow;
         }
-        else if (selectedTurret != null)
+        else if (selectedTower != null)
         {
-            instructionText.text = "Turret selected\nRight click to deselect";
+            instructionText.text = "Tower selected\nRight click to deselect";
             instructionText.color = Color.cyan;
         }
         else
         {
-            instructionText.text = "Click 'Place Turret'\nLeft Click to place a turret";
+            instructionText.text = "Click 'Place Turret'\nLeft Click to place a tower";
             instructionText.color = Color.white;
         }
     }
@@ -239,11 +243,11 @@ public class TurretPlacementUI : MonoBehaviour
     {
         if (resourceText != null && placementManager != null)
         {
-            resourceText.text = $"  : {placementManager.PlayerResources:F0}";
+            resourceText.text = $":{placementManager.PlayerResources:F0}";
         }
     }
 
-    private void SelectTurretAtMousePosition()
+    private void SelectTowerAtMousePosition()
     {
         Camera cam = Camera.main;
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -251,27 +255,33 @@ public class TurretPlacementUI : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit))
         {
-            PlaceableTurret turret = hit.collider.GetComponent<PlaceableTurret>();
-            if (turret != null)
+            // Try to find any tower with IUpgradeable interface
+            IUpgradeable upgradeable = hit.collider.GetComponent<IUpgradeable>();
+            if (upgradeable != null)
             {
-                SelectTurret(turret);
+                MonoBehaviour tower = hit.collider.GetComponent<MonoBehaviour>();
+                if (tower != null)
+                {
+                    SelectTower(tower, upgradeable);
+                }
             }
         }
     }
 
-    public void SelectTurret(PlaceableTurret turret)
+    public void SelectTower(MonoBehaviour tower, IUpgradeable upgradeable)
     {
-        if (selectedTurret != null)
+        if (selectedTower != null)
         {
-            selectedTurret.HideRange();
+            HideTowerRange(selectedTower);
         }
 
-        selectedTurret = turret;
+        selectedTower = tower;
+        selectedUpgradeable = upgradeable;
 
-        if (selectedTurret != null)
+        if (selectedTower != null && selectedUpgradeable != null)
         {
-            selectedTurret.ShowRange();
-            UpdateTurretInfoPanel();
+            ShowTowerRange(selectedTower);
+            UpdateTowerInfoPanel();
 
             if (turretInfoPanel != null)
             {
@@ -280,12 +290,13 @@ public class TurretPlacementUI : MonoBehaviour
         }
     }
 
-    public void DeselectTurret()
+    public void DeselectTower()
     {
-        if (selectedTurret != null)
+        if (selectedTower != null)
         {
-            selectedTurret.HideRange();
-            selectedTurret = null;
+            HideTowerRange(selectedTower);
+            selectedTower = null;
+            selectedUpgradeable = null;
         }
 
         if (turretInfoPanel != null)
@@ -294,77 +305,140 @@ public class TurretPlacementUI : MonoBehaviour
         }
     }
 
-    public void UpdateTurretInfoPanel()
+    private void ShowTowerRange(MonoBehaviour tower)
     {
-        if (selectedTurret == null) return;
-
-        if (turretDamageText != null)
+        if (tower is PlaceableTurret turret)
         {
-            turretDamageText.text = $"{selectedTurret.damage:F1}";
+            turret.ShowRange();
+        }
+        // Add other tower types as needed
+    }
+
+    private void HideTowerRange(MonoBehaviour tower)
+    {
+        if (tower is PlaceableTurret turret)
+        {
+            turret.HideRange();
+        }
+        // Add other tower types as needed
+    }
+
+    public void UpdateTowerInfoPanel()
+    {
+        if (selectedUpgradeable == null || selectedTower == null) return;
+
+        // Update tower name
+        if (towerNameText != null)
+        {
+            towerNameText.text = selectedTower.GetType().Name;
         }
 
-        if (turretRangeText != null)
+        // Update upgrade level
+        if (towerUpgradeLevelText != null)
         {
-            turretRangeText.text = $"{selectedTurret.attackRange:F1}";
+            towerUpgradeLevelText.text = $"Level: {selectedUpgradeable.UpgradeLevel}";
         }
 
-        if (turretFireRateText != null)
+        // Update stats based on tower type
+        if (selectedTower is PlaceableTurret turret)
         {
-            turretFireRateText.text = $"{selectedTurret.fireRate:F1}/s";
+            if (towerDamageText != null)
+                towerDamageText.text = $"Damage: {turret.damage:F1}";
+            if (towerRangeText != null)
+                towerRangeText.text = $"Range: {turret.attackRange:F1}";
+            if (towerFireRateText != null)
+                towerFireRateText.text = $"Fire Rate: {turret.fireRate:F1}/s";
+            if (towerStatsText != null)
+                towerStatsText.text = $"Projectile Speed: {turret.projectileSpeed:F1}";
+        }
+        else if (selectedTower is BarrierDefender barrier)
+        {
+            if (towerDamageText != null)
+                towerDamageText.text = $"Damage/s: {barrier.damagePerSecond:F1}";
+            if (towerRangeText != null)
+                towerRangeText.text = $"Slow Radius: {barrier.slowRadius:F1}";
+            if (towerFireRateText != null)
+                towerFireRateText.text = $"Repair Rate: {barrier.repairRate:F1}";
+            if (towerStatsText != null)
+                towerStatsText.text = $"Health: {barrier.health:F0}/{barrier.maxHealth:F0}";
+        }
+        else if (selectedTower is SupportDefender support)
+        {
+            if (towerDamageText != null)
+                towerDamageText.text = $"Heal Rate: {support.healingRate:F1}";
+            if (towerRangeText != null)
+                towerRangeText.text = $"Heal Range: {support.healRange:F1}";
+            if (towerFireRateText != null)
+                towerFireRateText.text = $"Shield Strength: {support.shieldStrength:F1}";
+            if (towerStatsText != null)
+                towerStatsText.text = $"Energy: {(support.maxEnergy > 0 ? support.maxEnergy : 0):F0}";
         }
 
+        // Update upgrade cost
         if (upgradeCostText != null)
         {
-            float upgradeCost = selectedTurret.GetUpgradeCost();
+            float upgradeCost = selectedUpgradeable.GetUpgradeCost();
             upgradeCostText.text = $"Upgrade: {upgradeCost:F0}";
 
-            if (upgradeTurretButton != null)
+            if (upgradeTowerButton != null)
             {
-                upgradeTurretButton.interactable = placementManager.PlayerResources >= upgradeCost;
+                upgradeTowerButton.interactable = placementManager.PlayerResources >= upgradeCost;
             }
         }
     }
 
-    public void UpgradeSelectedTurret()
+    public void UpgradeSelectedTower()
     {
-        if (selectedTurret != null)
+        if (selectedUpgradeable != null)
         {
-            float upgradeCost = selectedTurret.GetUpgradeCost();
+            float upgradeCost = selectedUpgradeable.GetUpgradeCost();
 
             // Use the boolean DeductResources method from TurretPlacementManager
             if (placementManager.DeductResources(upgradeCost))
             {
-                selectedTurret.UpgradeTurret();
-                UpdateTurretInfoPanel();
-                Debug.Log($"Turret upgraded for {upgradeCost} resources");
+                selectedUpgradeable.UpgradeTower();
+                UpdateTowerInfoPanel();
+                Debug.Log($"Tower upgraded for {upgradeCost} resources");
             }
             else
             {
-                Debug.Log("Not enough resources to upgrade turret");
+                Debug.Log("Not enough resources to upgrade tower");
             }
         }
     }
 
-    public void SellSelectedTurret()
+    public void SellSelectedTower()
     {
-        if (selectedTurret != null)
+        if (selectedTower == null || selectedUpgradeable == null) return;
+
+        // Calculate sell value (75% of base cost)
+        float sellValue = 0f;
+        if (selectedTower is PlaceableTurret)
+            sellValue = placementManager.turretCost * 0.75f;
+        else if (selectedTower is BarrierDefender)
+            sellValue = 60f * 0.75f; // Base cost for barrier
+        else if (selectedTower is SupportDefender)
+            sellValue = 70f * 0.75f; // Base cost for support
+
+        // Add resources back to player
+        placementManager.AddResources(sellValue);
+
+        // Get the tower's grid position if it's a placeable turret
+        if (selectedTower is PlaceableTurret turret)
         {
-            float sellValue = placementManager.turretCost * 0.75f;
-
-            // Add resources back to player
-            placementManager.AddResources(sellValue);
-
-            // Get the turret's grid position
-            Vector2Int turretPos = selectedTurret.GridPosition;
-
-            // Remove turret from the placement manager
+            Vector2Int turretPos = turret.GridPosition;
             placementManager.RemoveTurret(turretPos);
-
-            // Deselect the turret
-            DeselectTurret();
-
-            Debug.Log($"Turret sold for {sellValue} resources");
         }
+        else
+        {
+            // For other tower types, just destroy them
+            Object.Destroy(selectedTower.gameObject);
+        }
+
+        // Deselect the tower
+        DeselectTower();
+
+        Debug.Log($"Tower sold for {sellValue} resources");
     }
 
     // Public method to start turret placement (can be called from other scripts or UI)
