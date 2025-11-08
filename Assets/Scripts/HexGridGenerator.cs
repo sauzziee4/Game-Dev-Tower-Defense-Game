@@ -107,7 +107,7 @@ public class HexGridGenerator : MonoBehaviour
         if (navMeshSurface != null)
         {
             navMeshSurface.BuildNavMesh();
-            Debug.Log("NavMesh built successfully.");
+            //Debug.Log("NavMesh built successfully.");
         }
         else
         {
@@ -115,7 +115,7 @@ public class HexGridGenerator : MonoBehaviour
         }
         //notifies other systems that grid generation is complete
         OnGridGenerated?.Invoke();
-        Debug.Log("Grid generation complete. OnGridGenerated event invoked.");
+        //Debug.Log("Grid generation complete. OnGridGenerated event invoked.");
     }
 
     //generates the decorations after the tiles are correctly generated

@@ -398,7 +398,7 @@ public class TurretPlacementUI : MonoBehaviour
             {
                 selectedUpgradeable.UpgradeTower();
                 UpdateTowerInfoPanel();
-                Debug.Log($"Tower upgraded for {upgradeCost} resources");
+                Debug.LogWarning($"Tower upgraded for {upgradeCost} resources");
             }
             else
             {

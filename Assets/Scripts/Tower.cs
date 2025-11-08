@@ -120,7 +120,7 @@ public class Tower : MonoBehaviour, IDefendable
     public void TakeDamage(float damage)
     {
         health -= damage;
-        Debug.Log($"Tower health: {health}");
+        //Debug.Log($"Tower health: {health}");
 
         if (health <= 0)
         {

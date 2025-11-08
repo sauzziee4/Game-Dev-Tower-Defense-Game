@@ -305,7 +305,7 @@ public class DefenderType
 
         CancelTurretPlacement();
 
-        Debug.Log($"{selectedType.name} placed at {coords}. Remaining resources: {playerResources}");
+        //Debug.Log($"{selectedType.name} placed at {coords}. Remaining resources: {playerResources}");
     }
 
     private void HighlightHex(GameObject hex, bool isValid)
@@ -404,7 +404,7 @@ public class DefenderType
         {
             selectedDefenderIndex = index;
             UpdatePlacementPreview();
-            Debug.Log($"Selected defender: {defenderTypes[selectedDefenderIndex].name}");
+            //Debug.Log($"Selected defender: {defenderTypes[selectedDefenderIndex].name}");
         }
     }
 

@@ -126,7 +126,7 @@ public class EnemySpawner : MonoBehaviour
             isSpawning = true;
             spawnCoroutine = StartCoroutine(SpawnEnemies());
             if (enableDebugLogs)
-                Debug.Log("EnemySpawner: Started spawning enemies");
+                Debug.Log("EnemySpawner: Started spawning enemies"); 
         }
     }
 

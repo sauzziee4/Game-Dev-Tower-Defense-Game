@@ -116,7 +116,7 @@ public class Enemy : MonoBehaviour, IDefendable
         {
             agent.speed = speed;
         }
-        Debug.Log($"Configured stats for {enemyType}: health={health}, speed={speed}, attackDamage={attackDamage}");
+        //Debug.Log($"Configured stats for {enemyType}: health={health}, speed={speed}, attackDamage={attackDamage}");
     }
 
     private void OnEnable()
@@ -333,7 +333,7 @@ public class Enemy : MonoBehaviour, IDefendable
     public void TakeDamage(float damage)
     {
         health -= damage;
-        Debug.Log($"Enemy health: {health}");
+        //Debug.Log($"Enemy health: {health}");
         if (health <= 0)
         {
             FindFirstObjectByType<TurretPlacementManager>()?.AddResources(resourceReward);

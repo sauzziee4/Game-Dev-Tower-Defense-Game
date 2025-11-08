@@ -547,6 +547,7 @@ public class SupportDefender : MonoBehaviour, IDefendable, IUpgradeable
     }
     #endregion
 
+#region Upgrade Systems
     public int UpgradeLevel => upgradeLevel;
 
     public float GetUpgradeCost()
@@ -564,10 +565,7 @@ public class SupportDefender : MonoBehaviour, IDefendable, IUpgradeable
     {
         if (isDestroyed) return;
 
-        var placementManager = Object.FindFirstObjectByType<TurretPlacementManager>();
-        float upgradeCost = GetUpgradeCost();
-        if(placementManager != null && placementManager.DeductResources(upgradeCost))
-        {
+        
             upgradeLevel++;
             energyRegenRate *= upgradeStatsMultiplier;
             maxEnergy *= upgradeStatsMultiplier;
@@ -605,8 +603,10 @@ public class SupportDefender : MonoBehaviour, IDefendable, IUpgradeable
             }
 
             Debug.Log($"Support Tower upgraded to {upgradeLevel}");
-        }
+        
     }
+    
+    #endregion
 
     #region Mouse Interaction
     // Called when mouse hovers over the support tower. Shows all range indicators.

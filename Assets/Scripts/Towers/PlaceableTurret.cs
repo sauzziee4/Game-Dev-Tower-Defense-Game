@@ -321,11 +321,6 @@ public class PlaceableTurret : MonoBehaviour, IDefendable, IUpgradeable
     {
         if (isDestroyed) return;
 
-        var placementManager = Object.FindFirstObjectByType<TurretPlacementManager>();
-        float upgradeCost = GetUpgradeCost();
-
-        if (placementManager != null && placementManager.DeductResources(upgradeCost))
-        {
             // Upgrade stats
             upgradeLevel++;
             damage *= upgradeStatMultiplier;
@@ -351,11 +346,6 @@ public class PlaceableTurret : MonoBehaviour, IDefendable, IUpgradeable
             }
 
             Debug.Log($"Turret upgraded to level {upgradeLevel}!");
-        }
-        else
-        {
-            Debug.Log("Not enough resources to upgrade!");
-        }
     }
     #endregion
 

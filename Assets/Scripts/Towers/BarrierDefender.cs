@@ -1,4 +1,4 @@
-using UnityEngine;
+                                                                                                                                                                                       using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
@@ -9,7 +9,7 @@ using Unity.VisualScripting;
 /// </summary>
 public class BarrierDefender : MonoBehaviour, IDefendable, IUpgradeable
 {
-    public float health { get; set; } 
+    public float health { get; set; }                                               
     public float maxHealth { get; private set; } = 200f;
     public Vector3 transform_position => transform.position;
 
@@ -47,7 +47,7 @@ public class BarrierDefender : MonoBehaviour, IDefendable, IUpgradeable
     private List<Enemy> affectedEnemies = new List<Enemy>();
     private Renderer barrierRenderer;
     private Material originalMaterial;
-    private Color origionalColour;
+    private Color originalColour;
 
     private float initialRepairRate;
     private float initialSlowRadius;
@@ -104,6 +104,8 @@ public class BarrierDefender : MonoBehaviour, IDefendable, IUpgradeable
         initialDamageRadius = damageRadius;
         initialDamagePerSecond = damagePerSecond;
         initialMaxHealth = maxHealth;
+
+        originalColour = barrierRenderer.material.color;
     }
 
     
@@ -424,11 +426,7 @@ public class BarrierDefender : MonoBehaviour, IDefendable, IUpgradeable
     {
         if (isDestroyed) return;
 
-        var placementManager = Object.FindFirstObjectByType<TurretPlacementManager>();
-        float upgradeCost = GetUpgradeCost();
-
-        if (placementManager != null && placementManager.DeductResources(upgradeCost))
-        {
+        
             upgradeLevel++;
             repairRate *= upgradeStatsMultiplier;
             slowRadius *= upgradeStatsMultiplier;
@@ -441,7 +439,7 @@ public class BarrierDefender : MonoBehaviour, IDefendable, IUpgradeable
 
             if (barrierRenderer != null)
             {
-                barrierRenderer.material.color = origionalColour;
+                barrierRenderer.material.color = originalColour;
                 transform.localScale = Vector3.one * Mathf.Pow(1.05f, upgradeLevel - 1);
             }
 
@@ -457,8 +455,7 @@ public class BarrierDefender : MonoBehaviour, IDefendable, IUpgradeable
                 damageAreaIndicator.transform.localScale = new Vector3(damageDiameter, 0.01f, damageDiameter);
             }
 
-            Debug.Log($"Barrier Upgrade to level {upgradeLevel}");
-        }
+        Debug.Log($"Barrier Upgrade to level {upgradeLevel}");
         
     }
 
