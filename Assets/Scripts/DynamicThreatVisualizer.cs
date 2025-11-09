@@ -22,7 +22,7 @@ public class DynamicThreatVisualizer : MonoBehaviour
     public Color criticalThreatColor = new Color(0.8f, 0.1f, 0.1f, 1f);
     [Tooltip("The intensity of vignette effect at maximum threat.")]
     [Range(0f, 1f)]
-    public float maxVignetteIntensity = 0.6f;
+    public float maxVignetteIntensity = 0.8f;
     [Tooltip("The saturation level at maximum threat. -100 us fully desaturated.")]
     [Range(-100f, 0f)]
     public float minSaturation = -40f;
