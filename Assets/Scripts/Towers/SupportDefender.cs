@@ -47,6 +47,7 @@ public class SupportDefender : MonoBehaviour, IDefendable, IUpgradeable
     public float upgradeCostMultiplier = 1.5f;
     public float upgradeStatsMultiplier = 1.3f;
     private float baseCost = 70f; 
+    [SerializeField] private StarUpgradeVisual starUpgradeVisuals;
 
     [Header("Visual Effects")]
     public GameObject healingRangeIndicator; 
@@ -102,6 +103,11 @@ public class SupportDefender : MonoBehaviour, IDefendable, IUpgradeable
             originalMaterial = supportRenderer.material;
         }
         CreateHealthBar();
+
+        if (starUpgradeVisuals == null)
+        {
+            starUpgradeVisuals = GetComponentInChildren<StarUpgradeVisual>();
+        }
 
         initialRegenEnergyRate = energyRegenRate;
         initialHealRange = healRange;
@@ -601,8 +607,13 @@ public class SupportDefender : MonoBehaviour, IDefendable, IUpgradeable
                 float shieldDiameter = shieldRange * 2f;
                 shieldRangeIndicator.transform.localScale = new Vector3(shieldDiameter, 0.01f, shieldDiameter);
             }
+                
+            if (starUpgradeVisuals != null)
+            {
+                starUpgradeVisuals.UpdateStarMaterial(upgradeLevel);
+            }
 
-            Debug.Log($"Support Tower upgraded to {upgradeLevel}");
+        Debug.Log($"Support Tower upgraded to {upgradeLevel}");
         
     }
     

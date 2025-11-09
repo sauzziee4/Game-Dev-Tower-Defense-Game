@@ -33,6 +33,7 @@ public class BarrierDefender : MonoBehaviour, IDefendable, IUpgradeable
     public float upgradeCostMultiplier = 1.5f;
     public float upgradeStatsMultiplier = 1.3f;
     private float baseCost = 60f; 
+    [SerializeField] private StarUpgradeVisual starUpgradeVisuals;
 
     [Header("Visual Effects")]
     public GameObject slowAreaIndicator;
@@ -97,6 +98,12 @@ public class BarrierDefender : MonoBehaviour, IDefendable, IUpgradeable
         {
             originalMaterial = barrierRenderer.material;
         }
+
+        if (starUpgradeVisuals == null)
+        {
+            starUpgradeVisuals = GetComponentInChildren<StarUpgradeVisual>();
+        }
+
 
         initialRepairRate = repairRate;
         initialSlowRadius = slowRadius;
@@ -449,11 +456,16 @@ public class BarrierDefender : MonoBehaviour, IDefendable, IUpgradeable
                 slowAreaIndicator.transform.localScale = new Vector3(slowDiameter, 0.01f, slowDiameter);
             }
 
-            if (damageAreaIndicator != null)
-            {
-                float damageDiameter = damageRadius * 2f;
-                damageAreaIndicator.transform.localScale = new Vector3(damageDiameter, 0.01f, damageDiameter);
-            }
+        if (damageAreaIndicator != null)
+        {
+            float damageDiameter = damageRadius * 2f;
+            damageAreaIndicator.transform.localScale = new Vector3(damageDiameter, 0.01f, damageDiameter);
+        }
+            
+        if (starUpgradeVisuals != null)
+        {
+            starUpgradeVisuals.UpdateStarMaterial(upgradeLevel);
+        }
 
         Debug.Log($"Barrier Upgrade to level {upgradeLevel}");
         

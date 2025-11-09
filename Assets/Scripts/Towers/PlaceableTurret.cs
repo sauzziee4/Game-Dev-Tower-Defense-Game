@@ -38,6 +38,7 @@ public class PlaceableTurret : MonoBehaviour, IDefendable, IUpgradeable
     public float upgradeCostMultiplier = 1.5f;
     public float upgradeStatMultiplier = 1.3f;
     private float baseCost = 50f;
+    [SerializeField] private StarUpgradeVisual starUpgradeVisuals;
 
     private float nextFireTime = 0f;
     private Enemy currentTarget;
@@ -89,6 +90,11 @@ public class PlaceableTurret : MonoBehaviour, IDefendable, IUpgradeable
         if (healthBarPrefab != null)
         {
             CreateHealthBar();
+        }
+
+        if (starUpgradeVisuals == null)
+        {
+            starUpgradeVisuals = GetComponentInChildren<StarUpgradeVisual>();
         }
     }
 
@@ -334,8 +340,8 @@ public class PlaceableTurret : MonoBehaviour, IDefendable, IUpgradeable
             // Reset visual appearance since we're at full health
             if (turretRenderer != null)
             {
-                turretRenderer.material.color = originalColor;
-                transform.localScale = Vector3.one * Mathf.Pow(1.05f, upgradeLevel - 1);
+                    turretRenderer.material.color = originalColor;
+                    transform.localScale = Vector3.one * Mathf.Pow(1.05f, upgradeLevel - 1);
             }
 
             // Update range indicator if it exists
@@ -344,8 +350,13 @@ public class PlaceableTurret : MonoBehaviour, IDefendable, IUpgradeable
                 float diameter = attackRange * 2f;
                 rangeIndicator.transform.localScale = new Vector3(diameter, 0.01f, diameter);
             }
+                
+            if (starUpgradeVisuals != null)
+            {
+                starUpgradeVisuals.UpdateStarMaterial(upgradeLevel);
+            }
 
-            Debug.Log($"Turret upgraded to level {upgradeLevel}!");
+        Debug.Log($"Turret upgraded to level {upgradeLevel}!");
     }
     #endregion
 
