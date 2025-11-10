@@ -50,7 +50,7 @@ public class DynamicThreatVisualizer : MonoBehaviour
             return;
         }
 
-        // 1. caluclate current threat level
+        //calculate current threat level
         float healthPercent = Mathf.Clamp01(centralTower.health / centralTower.maxHealth);
         float healthThreat = 1.0f - healthPercent;
 
@@ -59,12 +59,10 @@ public class DynamicThreatVisualizer : MonoBehaviour
 
         float targetThreatLevel = Mathf.Clamp01((healthThreat + enemyThreat) * 0.5f);
 
-        // 2. smoothly interpolate to the target threat level
+        //smoothly interpolate to the target threat level
         _currentThreatLevel = Mathf.Lerp(_currentThreatLevel, targetThreatLevel, Time.deltaTime * adaptionSpeed);
 
-       // Debug.LogWarning($"Health: {healthPercent:P0}, Enemies: {enemyCount}, Threat Level: {_currentThreatLevel:P0}");
-
-        // 3. apply VFX based on current threat level
+        //apply VFX based on current threat level
         ApplyVisuals();
     }
 
@@ -96,6 +94,7 @@ public class DynamicThreatVisualizer : MonoBehaviour
         if (_vignette == null) Debug.LogWarning("Vignette override not found in the Post Processing Profile.", this);
         if (_colorAdjustments == null) Debug.LogWarning("Color Adjustments override not found in the Post Processing Profile.", this);
     }
+
     //updates parameters of post-processing effects based on current threat level
     private void ApplyVisuals()
     {
