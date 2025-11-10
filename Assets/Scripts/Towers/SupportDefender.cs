@@ -45,7 +45,7 @@ public class SupportDefender : MonoBehaviour, IDefendable, IUpgradeable
     [Header("Upgrade Settings")]
     public int upgradeLevel = 1;
     public float upgradeCostMultiplier = 1.5f;
-    public float upgradeStatsMultiplier = 1.3f;
+    public float upgradeStatsMultiplier = 1.2f;
     private float baseCost = 70f; 
     [SerializeField] private StarUpgradeVisual starUpgradeVisuals;
 

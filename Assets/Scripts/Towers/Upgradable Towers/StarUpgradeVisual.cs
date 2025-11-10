@@ -6,6 +6,8 @@ public class StarUpgradeVisual : MonoBehaviour
     [SerializeField] private Material level1Material;
     [SerializeField] private Material level2Material;
     [SerializeField] private Material level3Material;
+    [SerializeField] private Material level4Material;
+    [SerializeField] private Material level5Material;
 
     private Renderer starRenderer;
     private int currentUpgradeLevel = 0;
@@ -40,6 +42,20 @@ public class StarUpgradeVisual : MonoBehaviour
                 if (level3Material != null)
                 {
                     starRenderer.material = level3Material;
+                }
+                break;
+
+            case 4:
+                if (level4Material != null)
+                {
+                    starRenderer.material = level4Material;
+                }
+                break;
+
+            case 5:
+                if (level5Material != null)
+                {
+                    starRenderer.material = level5Material;
                 }
                 break;
 

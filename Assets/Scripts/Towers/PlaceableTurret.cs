@@ -36,7 +36,7 @@ public class PlaceableTurret : MonoBehaviour, IDefendable, IUpgradeable
     [Header("Upgrade Settings")]
     public int upgradeLevel = 1;
     public float upgradeCostMultiplier = 1.5f;
-    public float upgradeStatMultiplier = 1.3f;
+    public float upgradeStatMultiplier = 1.2f;
     private float baseCost = 50f;
     [SerializeField] private StarUpgradeVisual starUpgradeVisuals;
 
